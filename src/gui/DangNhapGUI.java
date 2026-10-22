@@ -2,10 +2,16 @@ package gui;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
+
+import business.DangNhapBUS;
+import connectDB.ConnectDB;
+import dao.TaiKhoanDAO;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.sql.SQLException;
 
 /**
  * Màn hình đăng nhập - Hệ thống quản lý gara ô tô AutoCar PV
@@ -16,6 +22,7 @@ public class DangNhapGUI extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	// ====== Bảng màu ======
     private static final Color MAU_NEN       = new Color(2, 22, 70);
     private static final Color MAU_TIEU_DE   = new Color(0, 191, 230);
@@ -32,7 +39,16 @@ public class DangNhapGUI extends JFrame {
     private JButton btnDangNhap;
     private JLabel lblQuenMatKhau;
 
+    private DangNhapBUS dangNhap_bus;
     public DangNhapGUI() {
+    	try {
+			ConnectDB.getInstance().connect();
+			System.out.println("connected!");
+			dangNhap_bus = new DangNhapBUS();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	setTitle("AutoCar PV - Đăng nhập");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
@@ -123,8 +139,22 @@ public class DangNhapGUI extends JFrame {
         pnlNen.add(lblBanQuyen);
 
         // ---------- Sự kiện ----------
-        btnDangNhap.addActionListener(e -> xuLyDangNhap());
-        txtMatKhau.addActionListener(e -> xuLyDangNhap()); // Enter ở ô mật khẩu
+        btnDangNhap.addActionListener(e -> {
+			try {
+				xuLyDangNhap();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+        txtMatKhau.addActionListener(e -> {
+			try {
+				xuLyDangNhap();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}); // Enter ở ô mật khẩu
         txtTenDangNhap.addActionListener(e -> txtMatKhau.requestFocusInWindow());
 
         lblQuenMatKhau.addMouseListener(new MouseAdapter() {
@@ -217,8 +247,9 @@ public class DangNhapGUI extends JFrame {
         // Hiển thị dialog lên màn hình (phải đặt ở cuối cùng)
         dialog.setVisible(true);
     }
-    /** Xử lý đăng nhập (hiện chỉ kiểm tra rỗng, bạn nối với DAO/Service sau). */
-    private void xuLyDangNhap() {
+    /** Xử lý đăng nhập (hiện chỉ kiểm tra rỗng, bạn nối với DAO/Service sau). 
+     * @throws SQLException */
+    private void xuLyDangNhap() throws SQLException {
         String tenDN = txtTenDangNhap.getText().trim();
         String matKhau = new String(txtMatKhau.getPassword());
 
@@ -235,9 +266,17 @@ public class DangNhapGUI extends JFrame {
             return;
         }
 
-        // TODO: Gọi tầng nghiệp vụ để xác thực tài khoản
-        this.dispose();
-        new TrangChuGUI(tenDN, matKhau).setVisible(true);
+        
+        if (dangNhap_bus.DangNhap(tenDN, matKhau)==true) {
+        	JOptionPane.showMessageDialog(this, "Đăng nhập thành công!",
+                    "Thông báo", JOptionPane.WARNING_MESSAGE);
+        	this.dispose();
+            new TrangChuGUI(tenDN, matKhau).setVisible(true);
+        } else JOptionPane.showMessageDialog(this, "Sai tên đăng nhập hoặc mật khẩu!",
+                "Thông báo", JOptionPane.WARNING_MESSAGE);
+        txtTenDangNhap.requestFocus();
+        txtTenDangNhap.selectAll();
+        
     }
 
     private void styleInput(JTextField field) {
@@ -252,7 +291,11 @@ public class DangNhapGUI extends JFrame {
 
     /** Panel nền bo góc. */
     private static class RoundedPanel extends JPanel {
-        private final int radius;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private final int radius;
 
         RoundedPanel(int radius, Color bg) {
             this.radius = radius;
@@ -273,7 +316,11 @@ public class DangNhapGUI extends JFrame {
 
     /** Viền bo góc cho ô nhập liệu. */
     private static class RoundedBorder extends AbstractBorder {
-        private final int radius;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private final int radius;
         private final Color color;
         private final int padding;
 
@@ -300,7 +347,11 @@ public class DangNhapGUI extends JFrame {
 
     /** Nút bo góc có hiệu ứng hover. */
     private static class RoundedButton extends JButton {
-        private boolean hover = false;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private boolean hover = false;
 
         RoundedButton(String text) {
             super(text);
