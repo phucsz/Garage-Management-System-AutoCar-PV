@@ -37,6 +37,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import entity.VaiTro;
+
 /**
  * Khung chính của hệ thống AutoCar PV: sidebar (menu) + vùng nội dung dùng CardLayout.
  * Bấm nút menu nào thì hiển thị "card" tương ứng.
@@ -72,7 +74,7 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 	 * @param vaiTro vai trò người đăng nhập
 	 *               (có thể đổi thành tham số NhanVien của project nếu bạn đã có entity)
 	 */
-	public TrangChuGUI(String hoTen, String vaiTro) {
+	public TrangChuGUI(String hoTen, VaiTro vt) {
 		setTitle("AutoCar PV - Hệ thống quản lý gara ô tô");
 		setMinimumSize(new Dimension(1100, 700));
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -82,7 +84,7 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		JPanel p = new JPanel(new BorderLayout());
 		add(p);
 
-		p.add(taoSidebar(hoTen, vaiTro), BorderLayout.WEST);
+		p.add(taoSidebar(hoTen, vt), BorderLayout.WEST);
 		p.add(taoNoiDung(), BorderLayout.CENTER);
 
 		installShortcuts();
@@ -92,7 +94,7 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 	// =====================================================================
 	// SIDEBAR
 	// =====================================================================
-	private JPanel taoSidebar(String hoTen, String vaiTro) {
+	private JPanel taoSidebar(String hoTen, VaiTro vt) {
 		JPanel sidebar = new JPanel() {
 			private static final long serialVersionUID = 1L;
 
@@ -141,7 +143,7 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		JLabel lblTen = new JLabel(hoTen);
 		lblTen.setFont(new Font("Arial", Font.BOLD, 10));
 		lblTen.setForeground(TEXT_WHITE);
-		JLabel lblVaiTro = new JLabel(vaiTro);
+		JLabel lblVaiTro = new JLabel(vt.getTenVaiTro());
 		lblVaiTro.setFont(new Font("Arial", Font.BOLD, 10));
 		lblVaiTro.setForeground(TEXT_LIGHT);
 		thongTin.add(Box.createVerticalGlue());
