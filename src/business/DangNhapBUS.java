@@ -2,17 +2,29 @@ package business;
 
 import java.sql.SQLException;
 
+import dao.NhanVienDAO;
 import dao.TaiKhoanDAO;
+import dao.VaiTroDAO;
+import entity.NhanVien;
+import entity.TaiKhoan;
 
 public class DangNhapBUS {
+	private NhanVienDAO nv_dao = new NhanVienDAO();
+	private VaiTroDAO vt_dao = new VaiTroDAO();
 	private TaiKhoanDAO tk_dao = new TaiKhoanDAO();
 	
 	public DangNhapBUS() {
 		
 	}
 	
-	public boolean DangNhap(String tenDangNhap, String matKhau) throws SQLException {
-		if (tk_dao.dangNhap(tenDangNhap, matKhau)!= null) return true;
-		return false;
+	public TaiKhoan DangNhap(String tenDangNhap, String matKhau) throws SQLException {
+		TaiKhoan tk = tk_dao.dangNhap(tenDangNhap, matKhau);
+		return tk;
+	}
+	
+	public NhanVien getNVtheoMa(String tenDN) throws SQLException {
+		NhanVien nv = nv_dao.getNVTheoMa(tenDN);
+		
+		return nv;
 	}
 }

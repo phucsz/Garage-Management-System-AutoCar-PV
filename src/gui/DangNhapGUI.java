@@ -6,6 +6,8 @@ import javax.swing.border.AbstractBorder;
 import business.DangNhapBUS;
 import connectDB.ConnectDB;
 import dao.TaiKhoanDAO;
+import entity.NhanVien;
+import entity.TaiKhoan;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -267,11 +269,13 @@ public class DangNhapGUI extends JFrame {
         }
 
         
-        if (dangNhap_bus.DangNhap(tenDN, matKhau)==true) {
+        TaiKhoan tk = dangNhap_bus.DangNhap(tenDN, matKhau);
+        if (tk != null) {
         	JOptionPane.showMessageDialog(this, "Đăng nhập thành công!",
                     "Thông báo", JOptionPane.WARNING_MESSAGE);
-        	this.dispose();
-            new TrangChuGUI(tenDN, matKhau).setVisible(true);
+        	this.dispose();	
+        	String hoTen = dangNhap_bus.getNVtheoMa(tenDN).getHoTenNV();
+            new TrangChuGUI(hoTen, tk.getVaiTro().getTenVaiTro()).setVisible(true);
         } else JOptionPane.showMessageDialog(this, "Sai tên đăng nhập hoặc mật khẩu!",
                 "Thông báo", JOptionPane.WARNING_MESSAGE);
         txtTenDangNhap.requestFocus();

@@ -114,5 +114,9 @@ public class NhanVien {
 		this.trangThai = trangThai;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("%s %s %s %s %s %s %s %s %s %s",maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,cccd,sdt,diaChi,email,trangThai);
+	}
 	
 }

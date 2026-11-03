@@ -7,6 +7,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -138,10 +139,10 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		thongTin.setOpaque(false);
 		thongTin.setLayout(new BoxLayout(thongTin, BoxLayout.Y_AXIS));
 		JLabel lblTen = new JLabel(hoTen);
-		lblTen.setFont(FONT_BOLD);
+		lblTen.setFont(new Font("Arial", Font.BOLD, 10));
 		lblTen.setForeground(TEXT_WHITE);
 		JLabel lblVaiTro = new JLabel(vaiTro);
-		lblVaiTro.setFont(FONT_SMALL);
+		lblVaiTro.setFont(new Font("Arial", Font.BOLD, 10));
 		lblVaiTro.setForeground(TEXT_LIGHT);
 		thongTin.add(Box.createVerticalGlue());
 		thongTin.add(lblTen);
@@ -314,12 +315,5 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 				this.dispose();
 			}
 		}
-	}
-
-	// =====================================================================
-	// CHẠY THỬ
-	// =====================================================================
-	public static void main(String[] args) {
-		javax.swing.SwingUtilities.invokeLater(() -> new TrangChuGUI("Nguyễn Văn A", "Quản lý").setVisible(true));
 	}
 }

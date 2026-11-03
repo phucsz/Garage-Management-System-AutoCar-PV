@@ -13,6 +13,8 @@ import entity.TaiKhoan;
 import entity.VaiTro;
 
 public class TaiKhoanDAO {
+	private VaiTroDAO vt_dao = new VaiTroDAO();
+	
 	public ArrayList<TaiKhoan> getdsTK() throws SQLException{
 		ArrayList<TaiKhoan> dsTK = new ArrayList<TaiKhoan>();
 		ConnectDB.getInstance();
@@ -48,7 +50,7 @@ public class TaiKhoanDAO {
 		if (rs.next()) {
 			NhanVien nv = new NhanVien(tenDangNhap);
 			String maVaiTro = rs.getString(3);
-			VaiTro vt = new VaiTro(maVaiTro);
+			VaiTro vt = vt_dao.getVaiTroTheoMa(maVaiTro);
 			
 			tk = new TaiKhoan(nv, matKhau, vt);
 		}
