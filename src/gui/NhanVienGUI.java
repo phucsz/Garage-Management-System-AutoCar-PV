@@ -530,15 +530,15 @@ public class NhanVienGUI extends JPanel {
 		panel.setPreferredSize(new Dimension(760, 380));
 		themO(panel, labeled("Mã nhân viên", txtMaNV), 0, 0);
 		themO(panel, labeled("Họ tên nhân viên *", txtHoTenNV), 0, 1);
-		themO(panel, labeled("Nơi sinh *", txtNoiSinh), 0, 2);
+		themO(panel, labeled("Nơi sinh", txtNoiSinh), 0, 2);
 		themO(panel, labeled("Ngày sinh *", txtNgaySinh), 1, 0);
-		themO(panel, labeled("Giới tính *", cboGioiTinh), 1, 1);
+		themO(panel, labeled("Giới tính", cboGioiTinh), 1, 1);
 		themO(panel, labeled("CCCD *", txtCCCD), 1, 2);
 		themO(panel, labeled("Số điện thoại *", txtSdt), 2, 0);
-		themO(panel, labeled("Địa chỉ *", txtDiaChi), 2, 1);
+		themO(panel, labeled("Địa chỉ", txtDiaChi), 2, 1);
 		themO(panel, labeled("Email", txtEmail), 2, 2);
 		themO(panel, labeled("Trạng thái *", cboTrangThai), 3, 0);
-		themO(panel, labeled("Vai trò (join từ tài khoản) *", cboVaiTro), 3, 1);
+		themO(panel, labeled("Vai trò", cboVaiTro), 3, 1);
 
 		return new NhanVienPopupForm(panel, txtMaNV, txtHoTenNV, txtNoiSinh, txtNgaySinh, cboGioiTinh, txtCCCD,
 				txtSdt, txtDiaChi, txtEmail, cboTrangThai, cboVaiTro);
@@ -587,10 +587,7 @@ public class NhanVienGUI extends JPanel {
 			baoLoi("Vui lòng nhập họ tên nhân viên.", form.txtHoTenNV);
 			return false;
 		}
-		if (form.txtNoiSinh.getText().trim().isEmpty()) {
-			baoLoi("Vui lòng nhập nơi sinh.", form.txtNoiSinh);
-			return false;
-		}
+		
 		LocalDate ngaySinh = parseNgay(form.txtNgaySinh.getText().trim());
 		if (ngaySinh == null) {
 			baoLoi("Ngày sinh không hợp lệ (định dạng dd/MM/yyyy).", form.txtNgaySinh);
@@ -612,6 +609,14 @@ public class NhanVienGUI extends JPanel {
 			baoLoi("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.", form.txtSdt);
 			return false;
 		}
+		
+		String email = form.txtEmail.getText().trim();
+		if (!email.isEmpty())
+		if (!email.matches("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$")) {
+			baoLoi("Email không hợp lệ.", form.txtEmail);
+			return false;
+		}
+		
 		for (NhanVien nv : dsNhanVien) {
 			if (nv != nvDangSua && sdt.equals(nv.getSdt())) {
 				baoLoi("Số điện thoại đã tồn tại (" + nv.getMaNV() + " - " + nv.getHoTenNV() + ").", form.txtSdt);
@@ -619,16 +624,6 @@ public class NhanVienGUI extends JPanel {
 			}
 		}
 
-		if (form.txtDiaChi.getText().trim().isEmpty()) {
-			baoLoi("Vui lòng nhập địa chỉ.", form.txtDiaChi);
-			return false;
-		}
-
-		String email = form.txtEmail.getText().trim();
-		if (!email.isEmpty() && !email.matches("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$")) {
-			baoLoi("Email không hợp lệ.", form.txtEmail);
-			return false;
-		}
 		return true;
 	}
 
@@ -781,7 +776,7 @@ public class NhanVienGUI extends JPanel {
 						JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			JOptionPane.showMessageDialog(this, "Đã cập nhật mật khẩu cho nhân viên " + nv.getMaNV() + ".",
+			JOptionPane.showMessageDialog(this, "Đã cập nhật mật khẩu mới cho nhân viên " + nv.getHoTenNV()+ ".",
 					"Thông báo", JOptionPane.INFORMATION_MESSAGE);
 		} catch (SQLException ex) {
 			JOptionPane.showMessageDialog(this, "Không thể cập nhật mật khẩu: " + ex.getMessage(), "Lỗi CSDL",
