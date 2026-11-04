@@ -58,4 +58,38 @@ public class TaiKhoanDAO {
 	}
 	
 	//public boolean taoTaiKhoan(String maNV,)
+	public boolean themTK(String maNV, String maVaiTro) throws SQLException {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		String sql = "insert into TaiKhoan(tenDangNhap, matKhau, maVaiTro) "
+				+ "values (?, ENCRYPTBYPASSPHRASE('123', ?), ?)";
+		PreparedStatement stmt = con.prepareStatement(sql);
+		stmt.setString(1, maNV);
+		stmt.setString(2, "123");
+		stmt.setString(3, maVaiTro);
+		return stmt.executeUpdate() > 0;
+	}
+
+	public boolean capNhatVaiTro(String maNV, String maVaiTro) throws SQLException {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		String updateSql = "update TaiKhoan set maVaiTro=? where tenDangNhap=?";
+		PreparedStatement update = con.prepareStatement(updateSql);
+		update.setString(1, maVaiTro);
+		update.setString(2, maNV);
+		if (update.executeUpdate() > 0) {
+			return true;
+		}
+		return themTK(maNV, maVaiTro);
+	}
+
+	public boolean capNhatMatKhau(String maNV, String matKhauMoi) throws SQLException {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		String sql = "update TaiKhoan set matKhau=ENCRYPTBYPASSPHRASE('123', ?) where tenDangNhap=?";
+		PreparedStatement stmt = con.prepareStatement(sql);
+		stmt.setString(1, matKhauMoi);
+		stmt.setString(2, maNV);
+		return stmt.executeUpdate() > 0;
+	}
 }
