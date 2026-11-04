@@ -4,13 +4,11 @@ import java.sql.SQLException;
 
 import dao.NhanVienDAO;
 import dao.TaiKhoanDAO;
-import dao.VaiTroDAO;
 import entity.NhanVien;
 import entity.TaiKhoan;
 
 public class DangNhapBUS {
 	private NhanVienDAO nv_dao = new NhanVienDAO();
-	private VaiTroDAO vt_dao = new VaiTroDAO();
 	private TaiKhoanDAO tk_dao = new TaiKhoanDAO();
 	
 	public DangNhapBUS() {

@@ -64,7 +64,8 @@ public final class UITheme {
 	public static final String IMG_BAO_CAO = IMG_DIR + "icon_baoCao.png";
 	public static final String IMG_CA_NHAN = IMG_DIR + "icon_caNhan.png";
 	public static final String IMG_DANG_XUAT = IMG_DIR + "icon_dangXuat.png";
-
+	public static final String IMG_KHUYEN_MAI = IMG_DIR + "icon_khuyenMai.png";
+	
 	public static final String IMG_TIM_KIEM = IMG_DIR + "icon_timKiem.png"; // 16 x 16
 	public static final String IMG_THEM = IMG_DIR + "icon_them.png";
 	public static final String IMG_QUAY_LAI = IMG_DIR + "icon_quayLai.png";

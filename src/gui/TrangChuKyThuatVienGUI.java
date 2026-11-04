@@ -1,5 +1,6 @@
 package gui;
 
+import static gui.UITheme.*;
 import javax.swing.SwingUtilities;
 
 /**
@@ -14,11 +15,11 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
 	// Ví dụ: "/images/icon_trangChu.png" hoặc chỉ cần "icon_trangChu.png" (tự hiểu là nằm trong /images/).
 	// Để rỗng thì sẽ hiện khung viền nét đứt.
 	// =====================================================================
-	private static final String ICON_TRANG_CHU = ""; // TODO: nhập đường dẫn
-	private static final String ICON_DS_CONG_VIEC = ""; // TODO: nhập đường dẫn
-	private static final String ICON_CONG_VIEC_PHU_TRACH = ""; // TODO: nhập đường dẫn
-	private static final String ICON_YEU_CAU_XUAT_KHO = ""; // TODO: nhập đường dẫn
-	private static final String ICON_BAO_CAO = ""; // TODO: nhập đường dẫn
+	private static final String ICON_TRANG_CHU = IMG_TRANG_CHU; 
+	private static final String ICON_DS_CONG_VIEC = "/images/icon_dsCongViec.png"; // 
+	private static final String ICON_CONG_VIEC_PHU_TRACH = "/images/icon_cvPhuTrach.png"; 
+	private static final String ICON_YEU_CAU_XUAT_KHO = "/images/icon_yeuCauXuatKho.png"; 
+	private static final String ICON_BAO_CAO = IMG_BAO_CAO; 
 
 	private static final MucMenu[] MENU = {
 			new MucMenu(KEY_TRANG_CHU, "Trang Chủ", ICON_TRANG_CHU),
