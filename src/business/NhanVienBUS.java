@@ -15,4 +15,9 @@ public class NhanVienBUS {
 	public ArrayList<NhanVien> getDSNV() throws SQLException {
 		return nv_dao.getdsNV();
 	}
+	
+	public boolean themNhanVien(NhanVien nv) throws SQLException {
+		if (nv_dao.themNV(nv)) return true;
+		return false;
+	}
 }

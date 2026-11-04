@@ -18,9 +18,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -37,45 +39,89 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import entity.VaiTro;
-
 /**
- * Khung chính của hệ thống AutoCar PV: sidebar (menu) + vùng nội dung dùng CardLayout.
- * Bấm nút menu nào thì hiển thị "card" tương ứng.
+ * Lớp cha của 4 màn hình trang chủ theo vai trò (Quản lý, Tiếp nhận viên, Kỹ thuật viên, Thu ngân).
+ *
+ * Lớp này lo phần dùng chung: sidebar (logo, thẻ người dùng, menu chính, Xem thông tin cá nhân,
+ * Đăng xuất), vùng nội dung dùng CardLayout, phím tắt Ctrl+1..9 và đăng xuất.
+ * Mỗi lớp con chỉ cần khai báo danh sách nút "Menu chính" của vai trò mình và đăng ký các card.
+ *
+ * Cách viết một lớp con:
+ * <pre>
+ * public MyGUI(String hoTen) {
+ *     super(hoTen, "Tên vai trò", MENU);   // MENU là mảng MucMenu
+ *     themCard(KEY_XXX, panelThat);         // chỉ cần đăng ký những màn hình đã làm xong
+ *     hoanTat();                            // tự tạo panel tạm cho mục còn lại + hiện trang đầu
+ * }
+ * </pre>
  */
-public class TrangChuGUI extends JFrame implements ActionListener {
+public abstract class TrangChuBaseGUI extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	// ====== Khóa của từng card trong CardLayout ======
 	public static final String KEY_TRANG_CHU = "trangchu";
-	public static final String KEY_TIEP_NHAN = "tiepnhan";
-	public static final String KEY_SUA_CHUA = "suachua";
-	public static final String KEY_HOA_DON = "hoadon";
-	public static final String KEY_PHU_TUNG = "phutung";
-	public static final String KEY_DICH_VU = "dichvu";
-	public static final String KEY_KHACH_HANG = "khachhang";
-	public static final String KEY_NHAN_VIEN = "nhanvien";
 	public static final String KEY_BAO_CAO = "baocao";
 	public static final String KEY_CA_NHAN = "canhan";
+
+	// Quản lý
+	public static final String KEY_PHU_TUNG = "phutung";
+	public static final String KEY_DICH_VU = "dichvu";
+	public static final String KEY_NHAN_VIEN = "nhanvien";
+	public static final String KEY_KHUYEN_MAI = "khuyenmai";
+
+	// Tiếp nhận viên
+	public static final String KEY_KHACH_HANG = "khachhang";
+	public static final String KEY_TIEP_NHAN = "tiepnhan";
+	public static final String KEY_SUA_CHUA = "suachua";
+
+	// Kỹ thuật viên
+	public static final String KEY_DS_CONG_VIEC = "dscongviec";
+	public static final String KEY_CONG_VIEC_PHU_TRACH = "congviecphutrach";
+	public static final String KEY_YEU_CAU_XUAT_KHO = "yeucauxuatkho";
+
+	// Thu ngân
+	public static final String KEY_THANH_TOAN = "thanhtoan";
+
+	/** Mô tả một nút trong "Menu chính": khóa card, chữ hiển thị và đường dẫn icon. */
+	public static class MucMenu {
+		final String key;
+		final String text;
+		final String iconPath;
+
+		/**
+		 * @param key      khóa card sẽ hiển thị khi bấm nút
+		 * @param text     chữ trên nút
+		 * @param iconPath đường dẫn icon, ví dụ "/images/icon_trangChu.png" (để "" nếu chưa có)
+		 */
+		public MucMenu(String key, String text, String iconPath) {
+			this.key = key;
+			this.text = text;
+			this.iconPath = iconPath;
+		}
+	}
 
 	private final CardLayout cardLayout = new CardLayout();
 	private final JPanel content = new JPanel(cardLayout);
 
+	private final MucMenu[] menu;
 	/** Nút menu theo khóa card (giữ thứ tự thêm vào). */
 	private final Map<String, SidebarButton> dsNut = new LinkedHashMap<>();
-	/** Các khóa của 9 mục menu chính (dùng cho phím tắt Ctrl+1..9). */
+	/** Các khóa của mục menu chính (dùng cho phím tắt Ctrl+1..9). */
 	private final List<String> dsKhoaChinh = new ArrayList<>();
+	/** Các card đã được đăng ký. */
+	private final Set<String> dsCard = new HashSet<>();
 
 	private SidebarButton btnDangXuat;
-	private NhanVienGUI nhanVienGUI;
 
 	/**
 	 * @param hoTen  họ tên người đăng nhập (hiện ở thẻ người dùng trên sidebar)
-	 * @param vaiTro vai trò người đăng nhập
-	 *               (có thể đổi thành tham số NhanVien của project nếu bạn đã có entity)
+	 * @param vaiTro vai trò (hiện ở thẻ người dùng và tiêu đề cửa sổ)
+	 * @param menu   danh sách nút "Menu chính" của vai trò này
 	 */
-	public TrangChuGUI(String hoTen, VaiTro vt) {
-		setTitle("AutoCar PV - Hệ thống quản lý gara ô tô");
+	protected TrangChuBaseGUI(String hoTen, String vaiTro, MucMenu[] menu) {
+		this.menu = menu;
+
+		setTitle("AutoCar PV - Hệ thống quản lý gara ô tô (" + vaiTro + ")");
 		setMinimumSize(new Dimension(1100, 700));
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setLocationRelativeTo(null);
@@ -84,17 +130,80 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		JPanel p = new JPanel(new BorderLayout());
 		add(p);
 
-		p.add(taoSidebar(hoTen, vt), BorderLayout.WEST);
-		p.add(taoNoiDung(), BorderLayout.CENTER);
+		content.setBackground(BG);
+		p.add(taoSidebar(hoTen, vaiTro), BorderLayout.WEST);
+		p.add(content, BorderLayout.CENTER);
+	}
 
+	// =====================================================================
+	// API DÀNH CHO LỚP CON
+	// =====================================================================
+
+	/** Đăng ký một màn hình (JPanel) vào CardLayout với khóa tương ứng. */
+	protected void themCard(String key, JPanel panel) {
+		content.add(panel, key);
+		dsCard.add(key);
+	}
+
+	/**
+	 * Gọi ở cuối constructor của lớp con: tự tạo panel tạm cho những mục menu chưa có màn hình,
+	 * cài phím tắt và hiển thị mục đầu tiên.
+	 */
+	protected void hoanTat() {
+		for (MucMenu m : menu) {
+			if (!dsCard.contains(m.key)) {
+				String moTa = KEY_TRANG_CHU.equals(m.key) ? "Thống kê tổng quan sẽ hiển thị tại đây."
+						: "Màn hình đang được xây dựng.";
+				themCard(m.key, taoPanelTam(m.text, moTa));
+			}
+		}
+		if (!dsCard.contains(KEY_CA_NHAN)) {
+			themCard(KEY_CA_NHAN, taoPanelTam("Thông tin cá nhân", "Màn hình đang được xây dựng."));
+		}
 		installShortcuts();
-		hienThi(KEY_TRANG_CHU);
+		hienThi(menu[0].key);
+	}
+
+	/** Hook: được gọi ngay trước khi chuyển sang một card (dùng để refresh dữ liệu). */
+	protected void onHienThi(String key) {
+		// lớp con ghi đè nếu cần
+	}
+
+	/** Panel tạm cho những màn hình chưa làm: thay bằng panel thật khi có. */
+	protected JPanel taoPanelTam(String tieuDe, String moTa) {
+		JPanel p = new JPanel(new GridBagLayout());
+		p.setBackground(BG);
+		JPanel box = new JPanel();
+		box.setOpaque(false);
+		box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
+		JLabel l1 = new JLabel(tieuDe);
+		l1.setFont(FONT_TITLE);
+		l1.setForeground(TITLE);
+		l1.setAlignmentX(Component.CENTER_ALIGNMENT);
+		JLabel l2 = new JLabel(moTa);
+		l2.setFont(FONT_BODY);
+		l2.setForeground(TEXT_MUTED);
+		l2.setAlignmentX(Component.CENTER_ALIGNMENT);
+		box.add(l1);
+		box.add(Box.createVerticalStrut(6));
+		box.add(l2);
+		p.add(box);
+		return p;
+	}
+
+	/** Chuyển sang card theo khóa và tô sáng nút menu tương ứng. */
+	public void hienThi(String key) {
+		onHienThi(key);
+		cardLayout.show(content, key);
+		for (Map.Entry<String, SidebarButton> en : dsNut.entrySet()) {
+			en.getValue().setActive(en.getKey().equals(key));
+		}
 	}
 
 	// =====================================================================
 	// SIDEBAR
 	// =====================================================================
-	private JPanel taoSidebar(String hoTen, VaiTro vt) {
+	private JPanel taoSidebar(String hoTen, String vaiTro) {
 		JPanel sidebar = new JPanel() {
 			private static final long serialVersionUID = 1L;
 
@@ -143,7 +252,7 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		JLabel lblTen = new JLabel(hoTen);
 		lblTen.setFont(new Font("Arial", Font.BOLD, 10));
 		lblTen.setForeground(TEXT_WHITE);
-		JLabel lblVaiTro = new JLabel(vt.getTenVaiTro());
+		JLabel lblVaiTro = new JLabel(vaiTro);
 		lblVaiTro.setFont(new Font("Arial", Font.BOLD, 10));
 		lblVaiTro.setForeground(TEXT_LIGHT);
 		thongTin.add(Box.createVerticalGlue());
@@ -168,20 +277,14 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		sidebar.add(pnlNhan);
 		sidebar.add(Box.createVerticalStrut(6));
 
-		// --- Các nút menu chính ---
-		themNutMenu(sidebar, KEY_TRANG_CHU, "Trang Chủ", IMG_TRANG_CHU);
-		themNutMenu(sidebar, KEY_TIEP_NHAN, "Tiếp Nhận Xe", IMG_TIEP_NHAN);
-		themNutMenu(sidebar, KEY_SUA_CHUA, "Lập Phiếu Sửa Chữa", IMG_SUA_CHUA);
-		themNutMenu(sidebar, KEY_HOA_DON, "Hóa Đơn & Thanh Toán", IMG_HOA_DON);
-		themNutMenu(sidebar, KEY_PHU_TUNG, "Quản Lý Phụ Tùng", IMG_PHU_TUNG);
-		themNutMenu(sidebar, KEY_DICH_VU, "Quản Lý Dịch Vụ", IMG_DICH_VU);
-		themNutMenu(sidebar, KEY_KHACH_HANG, "Khách Hàng & Xe", IMG_KHACH_HANG);
-		themNutMenu(sidebar, KEY_NHAN_VIEN, "Nhân Viên", IMG_NHAN_VIEN);
-		themNutMenu(sidebar, KEY_BAO_CAO, "Báo Cáo Thống Kê", IMG_BAO_CAO);
+		// --- Các nút "Menu chính" tùy theo vai trò ---
+		for (MucMenu m : menu) {
+			themNutMenu(sidebar, m);
+		}
 
 		sidebar.add(Box.createVerticalGlue());
 
-		// --- Nhóm cuối sidebar ---
+		// --- Nhóm cuối sidebar (dùng chung cho mọi vai trò) ---
 		JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
 		sep.setForeground(new Color(255, 255, 255, 40));
 		sep.setMaximumSize(new Dimension(SIDEBAR_BUTTON_WIDTH, 1));
@@ -202,69 +305,13 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		return sidebar;
 	}
 
-	private void themNutMenu(JPanel sidebar, String key, String text, String iconPath) {
-		SidebarButton btn = createSidebarButton(text, iconPath);
-		btn.addActionListener(e -> hienThi(key));
-		dsNut.put(key, btn);
-		dsKhoaChinh.add(key);
+	private void themNutMenu(JPanel sidebar, MucMenu m) {
+		SidebarButton btn = createSidebarButton(m.text, m.iconPath);
+		btn.addActionListener(e -> hienThi(m.key));
+		dsNut.put(m.key, btn);
+		dsKhoaChinh.add(m.key);
 		sidebar.add(btn);
 		sidebar.add(Box.createVerticalStrut(4));
-	}
-
-	// =====================================================================
-	// NỘI DUNG (CARD LAYOUT)
-	// =====================================================================
-	private JPanel taoNoiDung() {
-		content.setBackground(BG);
-
-		nhanVienGUI = new NhanVienGUI(() -> hienThi(KEY_TRANG_CHU));
-
-		content.add(taoPanelTam("Trang chủ", "Thống kê tổng quan sẽ hiển thị tại đây."), KEY_TRANG_CHU);
-		content.add(taoPanelTam("Tiếp nhận xe", "Gắn màn hình Lập phiếu tiếp nhận (dạng JPanel) vào đây."), KEY_TIEP_NHAN);
-		content.add(taoPanelTam("Lập phiếu sửa chữa", "Màn hình đang được xây dựng."), KEY_SUA_CHUA);
-		content.add(taoPanelTam("Hóa đơn & thanh toán", "Màn hình đang được xây dựng."), KEY_HOA_DON);
-		content.add(taoPanelTam("Quản lý phụ tùng", "Màn hình đang được xây dựng."), KEY_PHU_TUNG);
-		content.add(taoPanelTam("Quản lý dịch vụ", "Màn hình đang được xây dựng."), KEY_DICH_VU);
-		content.add(taoPanelTam("Khách hàng & xe", "Màn hình đang được xây dựng."), KEY_KHACH_HANG);
-		content.add(nhanVienGUI, KEY_NHAN_VIEN);
-		content.add(taoPanelTam("Báo cáo thống kê", "Màn hình đang được xây dựng."), KEY_BAO_CAO);
-		content.add(taoPanelTam("Thông tin cá nhân", "Màn hình đang được xây dựng."), KEY_CA_NHAN);
-
-		return content;
-	}
-
-	/** Panel tạm cho những màn hình chưa làm: thay bằng panel thật khi có. */
-	private JPanel taoPanelTam(String tieuDe, String moTa) {
-		JPanel p = new JPanel(new GridBagLayout());
-		p.setBackground(BG);
-		JPanel box = new JPanel();
-		box.setOpaque(false);
-		box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-		JLabel l1 = new JLabel(tieuDe);
-		l1.setFont(FONT_TITLE);
-		l1.setForeground(TITLE);
-		l1.setAlignmentX(Component.CENTER_ALIGNMENT);
-		JLabel l2 = new JLabel(moTa);
-		l2.setFont(FONT_BODY);
-		l2.setForeground(TEXT_MUTED);
-		l2.setAlignmentX(Component.CENTER_ALIGNMENT);
-		box.add(l1);
-		box.add(Box.createVerticalStrut(6));
-		box.add(l2);
-		p.add(box);
-		return p;
-	}
-
-	/** Chuyển sang card theo khóa và tô sáng nút menu tương ứng. */
-	public void hienThi(String key) {
-		if (KEY_NHAN_VIEN.equals(key)) {
-			nhanVienGUI.refresh();
-		}
-		// TODO: gọi refresh() cho các panel khác khi chúng có dữ liệu cần tải lại
-		cardLayout.show(content, key);
-		for (Map.Entry<String, SidebarButton> en : dsNut.entrySet()) {
-			en.getValue().setActive(en.getKey().equals(key));
-		}
 	}
 
 	// =====================================================================
@@ -274,7 +321,7 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 		InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 		ActionMap actionMap = getRootPane().getActionMap();
 
-		// Ctrl+1 ... Ctrl+9 cho 9 mục menu chính
+		// Ctrl+1 ... Ctrl+9 cho các mục menu chính
 		for (int i = 0; i < dsKhoaChinh.size() && i < 9; i++) {
 			final SidebarButton btn = dsNut.get(dsKhoaChinh.get(i));
 			final String tenAction = "menu" + (i + 1);
@@ -316,6 +363,28 @@ public class TrangChuGUI extends JFrame implements ActionListener {
 				new DangNhapGUI().setVisible(true);
 				this.dispose();
 			}
+		}
+	}
+
+	// =====================================================================
+	// MỞ TRANG CHỦ THEO VAI TRÒ (gọi từ DangNhapGUI sau khi đăng nhập thành công)
+	// =====================================================================
+	/**
+	 * Tạo đúng màn hình trang chủ theo vai trò. Chuỗi vai trò phải khớp với giá trị lưu
+	 * trong CSDL: "Quản lý", "Tiếp nhận viên", "Kỹ thuật viên", "Thu ngân".
+	 */
+	public static TrangChuBaseGUI taoTheoVaiTro(String vaiTro, String hoTen) {
+		switch (vaiTro) {
+		case "Quản lý":
+			return new TrangChuQuanLyGUI(hoTen);
+		case "Tiếp nhận viên":
+			return new TrangChuTiepNhanVienGUI(hoTen);
+		case "Kỹ thuật viên":
+			return new TrangChuKyThuatVienGUI(hoTen);
+		case "Thu ngân":
+			return new TrangChuThuNganGUI(hoTen);
+		default:
+			throw new IllegalArgumentException("Vai trò không hợp lệ: " + vaiTro);
 		}
 	}
 }

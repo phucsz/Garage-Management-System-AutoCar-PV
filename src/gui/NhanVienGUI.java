@@ -258,7 +258,14 @@ public class NhanVienGUI extends JPanel {
 		txtTimKiem.addActionListener(e -> locDuLieu());
 		cboLocVaiTro.addActionListener(e -> locDuLieu());
 		cboLocTrangThai.addActionListener(e -> locDuLieu());
-		btnThem.addActionListener(e -> moPopupNhanVien(null));
+		btnThem.addActionListener(e -> {
+			try {
+				moPopupNhanVien(null);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
 
 		JPanel hang = new JPanel(new GridBagLayout());
 		hang.setOpaque(false);
@@ -367,7 +374,12 @@ public class NhanVienGUI extends JPanel {
 					xem(nv);
 					break;
 				case 2:
-					moPopupNhanVien(nv);
+					try {
+						moPopupNhanVien(nv);
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					break;
 				case 3:
 					xoa(nv);
@@ -446,7 +458,7 @@ public class NhanVienGUI extends JPanel {
 		return l;
 	}
 
-	private void moPopupNhanVien(NhanVien nv) {
+	private void moPopupNhanVien(NhanVien nv) throws SQLException {
 		boolean dangThem = nv == null;
 		NhanVienPopupForm form = taoFormNhanVienPopup();
 		if (dangThem) {
@@ -468,10 +480,25 @@ public class NhanVienGUI extends JPanel {
 			if (!kiemTraFormPopup(form, nv)) {
 				continue;
 			}
-
-			NhanVien save = nv;
+			
+			NhanVien save = null;
+			
 			if (dangThem) {
-				save = new NhanVien();
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+				
+				String maNV = form.txtMaNV.getText().trim();
+				String hoTenNV = form.txtHoTenNV.getText(); 
+				String noiSinh = form.txtNoiSinh.getText(); 
+				LocalDate ngaySinh = LocalDate.parse(form.txtNgaySinh.getText(),dtf);
+				String gioiTinh = form.cboGioiTinh.getSelectedItem().toString();
+				String cccd = form.txtCCCD.getText();
+				String sdt = form.txtSdt.getText();
+				String diaChi = form.txtDiaChi.getText();
+				String email = form.txtEmail.getText();
+				String trangThai = form.cboTrangThai.getSelectedItem().toString();
+				
+				save = new NhanVien(maNV, hoTenNV, noiSinh, ngaySinh, gioiTinh, cccd, sdt, diaChi, email, trangThai);
+				nvBus.themNhanVien(save);
 				dsNhanVien.add(save);
 			}
 			doEntityFromForm(save, form);

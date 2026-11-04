@@ -56,4 +56,6 @@ public class TaiKhoanDAO {
 		}
 		return tk;
 	}
+	
+	//public boolean taoTaiKhoan(String maNV,)
 }

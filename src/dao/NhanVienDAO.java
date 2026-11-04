@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,8 +11,7 @@ import java.util.ArrayList;
 
 import connectDB.ConnectDB;
 import entity.NhanVien;
-import entity.TaiKhoan;
-import entity.VaiTro;
+
 
 public class NhanVienDAO {
 	public NhanVienDAO() {
@@ -68,5 +68,28 @@ public class NhanVienDAO {
 		}
 		return nv;
 	}
-
+	
+	public boolean themNV(NhanVien nv) throws SQLException {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		String sql = "insert into NhanVien values (?,?,?,?,?,?,?,?,?,?)";
+		PreparedStatement stmt = con.prepareStatement(sql);
+		
+		stmt.setString(1, nv.getMaNV());
+		stmt.setString(2, nv.getHoTenNV());
+		stmt.setString(3, nv.getNoiSinh());
+		stmt.setDate(4, Date.valueOf(nv.getNgaySinh()));
+		stmt.setString(5, nv.getGioiTinh());
+		stmt.setString(6, nv.getCccd());
+		stmt.setString(7, nv.getSdt());
+		stmt.setString(8, nv.getDiaChi());
+		stmt.setString(9, nv.getEmail());
+		stmt.setString(10, nv.getTrangThai());
+		
+		int rs = stmt.executeUpdate();
+		if (rs>0) {
+			return true;
+		}
+		return false;
+	}
 }

@@ -28,15 +28,19 @@ CREATE TABLE TaiKhoan (
     FOREIGN KEY (maVaiTro) REFERENCES VaiTro(maVaiTro),
     FOREIGN KEY (tenDangNhap) REFERENCES NhanVien(maNV)
 );
-
 insert into VaiTro values 
-('QUANLY',N'Quản lý cửa hàng',N'Là người có quyền hạn cao nhất trong hệ thống'),
+('QUANLY',N'Quản lý',N'Là người có quyền hạn cao nhất trong hệ thống'),
 ('TIEPNHANVIEN',N'Tiếp nhận viên',N'Làm việc trực tiếp với khách hàng'),
 ('KYTHUATVIEN',N'Kỹ thuật viên',N'Thực hiện công việc kỹ thuật'),
 ('THUNGAN',N'Thu ngân',N'Phụ trách thanh toán hóa đơn')
 
 insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
 ('NV15092006001',N'Phạm Phương Hoàng Phúc',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0949101885',N'Đang làm việc')
+
+insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
+('NV25122004',N'Trần Thị Lê',N'Hà Nội','2004-12-25',N'Nữ','0919798122',N'Đang làm việc')
+
+delete from NhanVien where maNV = 'NV25122004'
 
 insert into TaiKhoan values
 ('NV15092006001',ENCRYPTBYPASSPHRASE('123','15092006'),'QUANLY')
@@ -50,3 +54,7 @@ select tenDangNhap, convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) as 
 where tenDangNhap = 'NV15092006001' and convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) = '15092006'
 
 Select * from TaiKhoan where tenDangNhap = 'NV15092006001'
+
+update VaiTro 
+set tenVaiTro = N'Quản lý'
+where maVaiTro = 'QUANLY'
