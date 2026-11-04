@@ -57,7 +57,6 @@ public class TaiKhoanDAO {
 		return tk;
 	}
 	
-	//public boolean taoTaiKhoan(String maNV,)
 	public boolean themTK(String maNV, String maVaiTro) throws SQLException {
 		ConnectDB.getInstance();
 		Connection con = ConnectDB.getConnection();

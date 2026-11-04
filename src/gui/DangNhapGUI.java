@@ -5,9 +5,6 @@ import javax.swing.border.AbstractBorder;
 
 import business.DangNhapBUS;
 import connectDB.ConnectDB;
-import dao.NhanVienDAO;
-import dao.TaiKhoanDAO;
-import entity.NhanVien;
 import entity.TaiKhoan;
 
 import java.awt.*;
