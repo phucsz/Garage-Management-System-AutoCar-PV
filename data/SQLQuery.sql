@@ -37,11 +37,6 @@ insert into VaiTro values
 insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
 ('NV15092006001',N'Phạm Phương Hoàng Phúc',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0949101885',N'Đang làm việc')
 
-insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
-('NV25122004',N'Trần Thị Lê',N'Hà Nội','2004-12-25',N'Nữ','0919798122',N'Đang làm việc')
-
-delete from NhanVien where maNV = 'NV25122004'
-
 insert into TaiKhoan values
 ('NV15092006001',ENCRYPTBYPASSPHRASE('123','15092006'),'QUANLY')
 
