@@ -31,6 +31,9 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 			new MucMenu(KEY_BAO_CAO, "Báo Cáo Thống Kê", ICON_BAO_CAO) };
 
 	private final NhanVienGUI nhanVienGUI;
+	private final PhuTungGUI phuTungGUI;
+	private final DichVuGUI dichVuGUI;
+	private final KhuyenMaiGUI khuyenMaiGUI;
 
 	public TrangChuQuanLyGUI(String hoTen) {
 		super(hoTen, "Quản lý", MENU);
@@ -38,9 +41,12 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 		// Màn hình đã làm xong thì đăng ký vào CardLayout; các mục còn lại tự có panel tạm.
 		nhanVienGUI = new NhanVienGUI(() -> hienThi(KEY_TRANG_CHU));
 		themCard(KEY_NHAN_VIEN, nhanVienGUI);
-		// themCard(KEY_PHU_TUNG, new PhuTungGUI());
-		// themCard(KEY_DICH_VU, new DichVuGUI());
-		// themCard(KEY_KHUYEN_MAI, new KhuyenMaiGUI());
+		phuTungGUI = new PhuTungGUI();
+		dichVuGUI = new DichVuGUI();
+		khuyenMaiGUI = new KhuyenMaiGUI();
+		themCard(KEY_PHU_TUNG, phuTungGUI);
+		themCard(KEY_DICH_VU, dichVuGUI);
+		themCard(KEY_KHUYEN_MAI, khuyenMaiGUI);
 
 		hoanTat();
 	}
@@ -49,6 +55,15 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 	protected void onHienThi(String key) {
 		if (KEY_NHAN_VIEN.equals(key)) {
 			nhanVienGUI.refresh();
+		}
+		if (KEY_PHU_TUNG.equals(key)) {
+			phuTungGUI.refresh();
+		}
+		if (KEY_DICH_VU.equals(key)) {
+			dichVuGUI.refresh();
+		}
+		if (KEY_KHUYEN_MAI.equals(key)) {
+			khuyenMaiGUI.refresh();
 		}
 	}
 

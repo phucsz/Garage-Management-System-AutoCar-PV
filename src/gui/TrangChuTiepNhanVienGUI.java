@@ -62,8 +62,8 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 		if (KEY_TIEP_NHAN.equals(key)) {
 			try {
 				lapPhieuGUI.refresh();
+				khachHangVaXeGUI.refresh();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} // cập nhật mã phiếu / ngày / giờ
 		} else if (KEY_TRA_CUU_TIEP_NHAN.equals(key)) {
