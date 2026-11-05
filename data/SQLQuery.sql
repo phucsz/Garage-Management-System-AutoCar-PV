@@ -36,17 +36,18 @@ insert into VaiTro values
 ('THUNGAN',N'Thu ngân',N'Phụ trách thanh toán hóa đơn')
 
 insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
-('NV15092006001',N'Phạm Phương Hoàng Phúc',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0949101885',N'Đang làm việc')
+('NV2024001',N'Phạm Phương Hoàng Phúc',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0949101885',N'Đang làm việc')
 
 insert into TaiKhoan values
-('NV15092006001',ENCRYPTBYPASSPHRASE('123','15092006'),'QUANLY')
+('NV2024001',ENCRYPTBYPASSPHRASE('123','15092006'),'QUANLY')
 
-select * from VaiTro
+/*--select * from VaiTro
 select * from NhanVien
 select * from TaiKhoan
 
 
 select tenDangNhap, convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) as matKhau,maVaiTro from TaiKhoan
-where tenDangNhap = 'NV15092006001' and convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) = '15092006'
+where tenDangNhap = 'NV2024001' and convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) = '15092006'
 
-Select * from TaiKhoan where tenDangNhap = 'NV15092006001'
+Select * from TaiKhoan where tenDangNhap = 'NV2024001'
+--*/
