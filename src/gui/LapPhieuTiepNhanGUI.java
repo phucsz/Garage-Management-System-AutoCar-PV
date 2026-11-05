@@ -10,24 +10,40 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+
+import dao.HangMucKiemTraDAO;
+import entity.HangMucKiemTra;
 
 /**
  * Màn hình LẬP PHIẾU TIẾP NHẬN (JPanel) - được nhúng vào CardLayout của TrangChuTiepNhanVienGUI.
@@ -39,17 +55,6 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	private static final DateTimeFormatter FMT_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private static final DateTimeFormatter FMT_GIO = DateTimeFormatter.ofPattern("H:mm");
 
-	private static final Color VIEN_O = new Color(226, 230, 235);
-
-	/** Nhóm hạng mục -> danh sách hạng mục kiểm tra (STT tự đánh liên tục). */
-	private static final Map<String, String[]> HANG_MUC = new LinkedHashMap<>();
-	static {
-		HANG_MUC.put("NỘI THẤT", new String[] { "Tay mở cửa", "Nút nâng, hạ kính", "Phần taplo", "Ghế trước",
-				"Ghế sau", "Che nắng hai bên" });
-		HANG_MUC.put("NGOẠI THẤT", new String[] { "Gương chiếu hậu", "Kính trước hai bên", "Kính sau hai bên",
-				"Kính lái trước", "Kính sau", "Đèn trước", "Đèn sau", "Đồng sơn toàn thân xe" });
-	}
-
 	private final Runnable moTraCuu;
 
 	private Input txtMaPhieu, txtNgayTiepNhan, txtGioTiepNhan;
@@ -58,8 +63,18 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	private JTextArea txtYeuCau;
 	private Input txtKyThuatVien;
 
-	private final List<String> dsHangMuc = new ArrayList<>();
-	private final List<Input> dsTinhTrang = new ArrayList<>();
+	private final HangMucKiemTraDAO hangMucDAO = new HangMucKiemTraDAO();
+	private final Set<String> maHangMucDaChon = new HashSet<>();
+	private final List<HangMucKiemTra> dsNoiThat = new ArrayList<>();
+	private final List<HangMucKiemTra> dsNgoaiThat = new ArrayList<>();
+	private final java.util.Map<String, String> tinhTrangTheoHangMuc = new java.util.HashMap<>();
+	private JTable tblNoiThat;
+	private JTable tblNgoaiThat;
+	private DefaultTableModel modelNoiThat;
+	private DefaultTableModel modelNgoaiThat;
+	private JScrollPane scrollNoiThat;
+	private JScrollPane scrollNgoaiThat;
+	private boolean dangNapGoiY;
 
 	/**
 	 * @param nguoiTiepNhan tên người tiếp nhận hiện trên ô "Kỹ thuật viên tiếp nhận" (chỉ đọc)
@@ -182,29 +197,26 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		txtGioTiepNhan = new Input(null, true);
 
 		txtSoDienThoai = new Input("Nhập số điện thoại khách hàng", false);
-		txtSoDienThoai.themIconBenPhai(IMG_TIM_KIEM, this::timKhachHang);
-		txtKhachHang = new Input(null, true);
+		txtSoDienThoai.themIconBenPhai("/images/icon_timKiemBlack.png", this::timKhachHang);
+		txtKhachHang = new Input(null, false);
 		txtDiaChi = new Input(null, true);
 
 		txtBienSo = new Input("Nhập biển số xe", false);
-		txtBienSo.themIconBenPhai(IMG_TIM_KIEM, this::timXe);
+		txtBienSo.themIconBenPhai("/images/icon_timKiemBlack.png", this::timXe);
 		txtHangXe = new Input("Nhập hãng / dòng xe", false);
 		txtSoKm = new Input("Nhập số km", false);
 
 		txtSoDienThoai.addActionListener(e -> timKhachHang());
 		txtBienSo.addActionListener(e -> timXe());
 
-		themO(form, labeled("Mã phiếu tiếp nhận", txtMaPhieu), 1, 0, 2);
-		themO(form, labeled("Ngày tiếp nhận", txtNgayTiepNhan), 1, 2, 2);
-		themO(form, labeled("Giờ tiếp nhận", txtGioTiepNhan), 1, 4, 2);
+		themO(form, labeled("Mã phiếu tiếp nhận", txtMaPhieu), 1, 0, 3);
+		themO(form, labeled("Ngày tiếp nhận", txtNgayTiepNhan), 1, 3, 3);
 
 		themO(form, labeled("Số điện thoại", txtSoDienThoai), 2, 0, 3);
-		themO(form, labeled("Khách hàng", txtKhachHang), 2, 3, 3);
-
-		themO(form, labeled("Địa chỉ khách hàng", txtDiaChi), 3, 0, 6);
+		themO(form, labeled("Họ tên khách hàng", txtKhachHang), 2, 3, 3);
 
 		themO(form, labeled("Biển số xe", txtBienSo), 4, 0, 2);
-		themO(form, labeled("Hãng / dòng xe", txtHangXe), 4, 2, 2);
+		themO(form, labeled("Hãng xe", txtHangXe), 4, 2, 2);
 		themO(form, labeled("Số km đã đi", txtSoKm), 4, 4, 2);
 		return form;
 	}
@@ -227,86 +239,295 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	private JPanel taoBangKiemTra() {
 		JPanel khung = new JPanel(new BorderLayout());
 		khung.setOpaque(false);
-
-		JPanel bang = new JPanel(new GridBagLayout());
-		bang.setBorder(new LineBorder(VIEN_O));
-		bang.setBackground(Color.WHITE);
-
-		int row = 0;
-		// Dòng tiêu đề
-		bang.add(oBang(nhanBang("STT", javax.swing.SwingConstants.CENTER, Color.WHITE, true), PRIMARY),
-				gbc(0, row, 1, 0, 40));
-		bang.add(oBang(nhanBang("HẠNG MỤC KIỂM TRA", javax.swing.SwingConstants.LEFT, Color.WHITE, true), PRIMARY),
-				gbc(1, row, 1, 0.62, 100));
-		bang.add(oBang(nhanBang("TÌNH TRẠNG LÚC KIỂM TRA", javax.swing.SwingConstants.LEFT, Color.WHITE, true),
-				PRIMARY), gbc(2, row, 1, 0.38, 100));
-		row++;
-
-		int stt = 1;
-		for (Map.Entry<String, String[]> nhom : HANG_MUC.entrySet()) {
-			// Dòng tiêu đề nhóm
-			bang.add(oBang(nhanBang(nhom.getKey(), javax.swing.SwingConstants.CENTER, PRIMARY, true), PRIMARY_LIGHT),
-					gbc(0, row, 2, 0, 40));
-			bang.add(oBang(new JLabel(" "), PRIMARY_LIGHT), gbc(2, row, 1, 0.38, 100));
-			row++;
-
-			for (String ten : nhom.getValue()) {
-				Color nen = (stt % 2 == 0) ? new Color(250, 251, 253) : Color.WHITE;
-				bang.add(oBang(nhanBang(String.valueOf(stt), javax.swing.SwingConstants.CENTER, TEXT_DARK, false), nen),
-						gbc(0, row, 1, 0, 40));
-				bang.add(oBang(nhanBang(ten, javax.swing.SwingConstants.LEFT, TEXT_DARK, false), nen),
-						gbc(1, row, 1, 0.62, 100));
-
-				Input o = new Input("Nhập tình trạng...", false);
-				o.setFont(FONT_SMALL);
-				o.setPreferredSize(new Dimension(100, 26));
-				bang.add(oBang(o, nen), gbc(2, row, 1, 0.38, 100));
-
-				dsHangMuc.add(ten);
-				dsTinhTrang.add(o);
-				stt++;
-				row++;
-			}
-		}
-		khung.add(bang, BorderLayout.CENTER);
-
-		// Ghi chú
-		JPanel ghiChu = new JPanel(new BorderLayout());
-		ghiChu.setBackground(new Color(255, 249, 219));
-		ghiChu.setBorder(new CompoundBorder(new LineBorder(new Color(240, 225, 160)), new EmptyBorder(5, 10, 5, 10)));
-		JLabel lblGhiChu = new JLabel("<html><b>Ghi chú:</b> Các hạng mục nêu trên có lỗi ghi rõ vào mục "
-				+ "\"Tình trạng lúc kiểm tra\", nếu không có lỗi thì bỏ trống.</html>");
-		lblGhiChu.setFont(FONT_SMALL);
-		lblGhiChu.setForeground(new Color(90, 80, 40));
-		ghiChu.add(lblGhiChu, BorderLayout.CENTER);
-		khung.add(ghiChu, BorderLayout.SOUTH);
+		JPanel cacNhom = new JPanel(new GridBagLayout());
+		cacNhom.setOpaque(false);
+		themDong(cacNhom, taoNhomHangMuc("NỘI THẤT", "Nội thất", true), 0, 10);
+		themDong(cacNhom, taoNhomHangMuc("NGOẠI THẤT", "Ngoại thất", false), 1, 0);
+		khung.add(cacNhom, BorderLayout.CENTER);
 		return khung;
 	}
 
-	private static GridBagConstraints gbc(int x, int y, int w, double wx, int prefW) {
-		GridBagConstraints g = new GridBagConstraints();
-		g.gridx = x;
-		g.gridy = y;
-		g.gridwidth = w;
-		g.weightx = wx;
-		g.fill = GridBagConstraints.BOTH;
-		g.ipadx = prefW;
-		return g;
+	private JPanel taoNhomHangMuc(String tieuDe, String loai, boolean noiThat) {
+		JPanel nhom = new JPanel(new BorderLayout(0, 6));
+		nhom.setOpaque(false);
+
+		JPanel dau = new JPanel(new BorderLayout());
+		dau.setOpaque(false);
+		JLabel lbl = new JLabel(tieuDe);
+		lbl.setFont(FONT_SECTION);
+		lbl.setForeground(TITLE);
+		JButton btnThem = new JButton("+");
+		btnThem.setFont(FONT_SECTION);
+		btnThem.setForeground(PRIMARY);
+		btnThem.setFocusPainted(false);
+		btnThem.setToolTipText("Thêm hạng mục " + loai.toLowerCase());
+		btnThem.addActionListener(e -> moBoChonHangMuc(nhom, loai, noiThat));
+		dau.add(lbl, BorderLayout.WEST);
+		dau.add(btnThem, BorderLayout.EAST);
+		nhom.add(dau, BorderLayout.NORTH);
+
+		DefaultTableModel model = taoModelHangMuc();
+		JTable bang = new JTable(model);
+		if (noiThat) {
+			modelNoiThat = model;
+			tblNoiThat = bang;
+		} else {
+			modelNgoaiThat = model;
+			tblNgoaiThat = bang;
+		}
+		tuyChinhBangHangMuc(bang, model);
+		JScrollPane scroll = new JScrollPane(bang);
+		scroll.getViewport().setBackground(Color.WHITE);
+		if (noiThat) {
+			scrollNoiThat = scroll;
+		} else {
+			scrollNgoaiThat = scroll;
+		}
+		capNhatChieuCaoBang(scroll, 0);
+		nhom.add(scroll, BorderLayout.CENTER);
+		return nhom;
 	}
 
-	private static JLabel nhanBang(String text, int align, Color fg, boolean dam) {
-		JLabel l = new JLabel(text, align);
-		l.setFont(dam ? FONT_SMALL_BOLD : FONT_LABEL);
-		l.setForeground(fg);
-		return l;
+	private DefaultTableModel taoModelHangMuc() {
+		return new DefaultTableModel(
+				new Object[] { "STT", "HẠNG MỤC KIỂM TRA", "TÌNH TRẠNG LÚC KIỂM TRA", "", "Mã hạng mục" }, 0) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return column == 2;
+			}
+		};
 	}
 
-	private static JPanel oBang(javax.swing.JComponent inner, Color nen) {
-		JPanel p = new JPanel(new BorderLayout());
-		p.setBackground(nen);
-		p.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 1, VIEN_O), new EmptyBorder(4, 8, 4, 8)));
-		p.add(inner, BorderLayout.CENTER);
-		return p;
+	private void tuyChinhBangHangMuc(JTable bang, DefaultTableModel model) {
+		bang.setRowHeight(38);
+		bang.setShowGrid(false);
+		bang.setIntercellSpacing(new Dimension(0, 0));
+		bang.setFont(FONT_BODY);
+		bang.setForeground(TEXT_DARK);
+		bang.setSelectionBackground(ROW_SELECTED);
+		bang.setFillsViewportHeight(true);
+		bang.setFocusable(false);
+		bang.getColumnModel().getColumn(0).setPreferredWidth(55);
+		bang.getColumnModel().getColumn(1).setPreferredWidth(300);
+		bang.getColumnModel().getColumn(2).setPreferredWidth(500);
+		bang.getColumnModel().getColumn(3).setPreferredWidth(55);
+		bang.getColumnModel().getColumn(4).setMinWidth(0);
+		bang.getColumnModel().getColumn(4).setMaxWidth(0);
+		bang.getColumnModel().getColumn(4).setPreferredWidth(0);
+		bang.getColumnModel().getColumn(0).setCellRenderer(new BangRenderer(javax.swing.SwingConstants.CENTER));
+		bang.getColumnModel().getColumn(1).setCellRenderer(new BangRenderer(javax.swing.SwingConstants.LEFT));
+		bang.getColumnModel().getColumn(2).setCellRenderer(new BangRenderer(javax.swing.SwingConstants.LEFT));
+		bang.getColumnModel().getColumn(3).setCellRenderer(new XoaRenderer());
+		JTextField editor = new JTextField();
+		editor.setFont(FONT_BODY);
+		editor.setBorder(new CompoundBorder(new LineBorder(new Color(190, 205, 220)), new EmptyBorder(5, 8, 5, 8)));
+		bang.getColumnModel().getColumn(2).setCellEditor(new javax.swing.DefaultCellEditor(editor));
+		bang.getTableHeader().setReorderingAllowed(false);
+		bang.getTableHeader().setResizingAllowed(false);
+		bang.getTableHeader().setDefaultRenderer(new HeaderRenderer());
+		bang.getTableHeader().setPreferredSize(new Dimension(100, 38));
+		bang.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int row = bang.rowAtPoint(e.getPoint());
+				int col = bang.columnAtPoint(e.getPoint());
+				if (row >= 0 && col == 3) {
+					xoaHangMuc(bang, model, row);
+				}
+			}
+		});
+	}
+
+	private void moBoChonHangMuc(JPanel nhom, String loai, boolean noiThat) {
+		JPanel boChon = new JPanel(new BorderLayout(8, 0));
+		boChon.setBackground(Color.WHITE);
+		boChon.setBorder(new CompoundBorder(new LineBorder(PRIMARY), new EmptyBorder(6, 8, 6, 8)));
+		JComboBox<HangMucKiemTra> combo = new JComboBox<>();
+		combo.setEditable(true);
+		combo.setRenderer(new DefaultListCellRenderer() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index,
+					boolean selected, boolean focus) {
+				super.getListCellRendererComponent(list, value, index, selected, focus);
+				setText(value instanceof HangMucKiemTra ? ((HangMucKiemTra) value).getTenHangMuc() : "");
+				return this;
+			}
+		});
+		JButton btnHuy = new JButton("Hủy");
+		JButton btnThem = new JButton("Thêm");
+		boChon.add(combo, BorderLayout.CENTER);
+		JPanel nut = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+		nut.setOpaque(false);
+		nut.add(btnHuy);
+		nut.add(btnThem);
+		boChon.add(nut, BorderLayout.EAST);
+		nhom.add(boChon, BorderLayout.SOUTH);
+		nhom.revalidate();
+		nhom.repaint();
+
+		Timer timerNapGoiY = new Timer(250, e -> napGoiY(combo, loai));
+		timerNapGoiY.setRepeats(false);
+		JTextField editor = (JTextField) combo.getEditor().getEditorComponent();
+		editor.getDocument().addDocumentListener(new DocumentListener() {
+			public void insertUpdate(DocumentEvent e) { timerNapGoiY.restart(); }
+			public void removeUpdate(DocumentEvent e) { timerNapGoiY.restart(); }
+			public void changedUpdate(DocumentEvent e) { timerNapGoiY.restart(); }
+		});
+		btnHuy.addActionListener(e -> dongBoChon(nhom, boChon));
+		btnThem.addActionListener(e -> {
+			Object selected = combo.getSelectedItem();
+			if (!(selected instanceof HangMucKiemTra)) {
+				JOptionPane.showMessageDialog(this, "Vui lòng chọn một hạng mục trong danh sách gợi ý.", "Thông báo",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			themHangMuc((HangMucKiemTra) selected, noiThat, nhom, boChon);
+		});
+		timerNapGoiY.setInitialDelay(0);
+		timerNapGoiY.start();
+		SwingUtilities.invokeLater(editor::requestFocusInWindow);
+	}
+
+	private void napGoiY(JComboBox<HangMucKiemTra> combo, String loai) {
+		if (dangNapGoiY) {
+			return;
+		}
+		dangNapGoiY = true;
+		JTextField editor = (JTextField) combo.getEditor().getEditorComponent();
+		String tuKhoa = editor.getText();
+		try {
+			List<HangMucKiemTra> goiY = hangMucDAO.timTheoLoai(loai, tuKhoa);
+			DefaultComboBoxModel<HangMucKiemTra> model = new DefaultComboBoxModel<>();
+			for (HangMucKiemTra item : goiY) {
+				if (!maHangMucDaChon.contains(item.getMaHangMuc())) {
+					model.addElement(item);
+				}
+			}
+			combo.setModel(model);
+			editor = (JTextField) combo.getEditor().getEditorComponent();
+			editor.setText(tuKhoa);
+			editor.setCaretPosition(editor.getDocument().getLength());
+			if (!goiY.isEmpty() && editor.hasFocus()) {
+				combo.showPopup();
+			}
+		} catch (java.sql.SQLException e) {
+			JOptionPane.showMessageDialog(this, "Không thể tải danh sách hạng mục kiểm tra.", "Lỗi",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		} finally {
+			dangNapGoiY = false;
+		}
+	}
+
+	private void themHangMuc(HangMucKiemTra item, boolean noiThat, JPanel nhom, JPanel boChon) {
+		if (!maHangMucDaChon.add(item.getMaHangMuc())) {
+			JOptionPane.showMessageDialog(this, "Hạng mục này đã được chọn trong phiếu tiếp nhận.", "Thông báo",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		List<HangMucKiemTra> danhSach = noiThat ? dsNoiThat : dsNgoaiThat;
+		danhSach.add(item);
+		capNhatBangHangMuc(noiThat ? modelNoiThat : modelNgoaiThat, danhSach);
+		dongBoChon(nhom, boChon);
+	}
+
+	private void xoaHangMuc(JTable bang, DefaultTableModel model, int row) {
+		List<HangMucKiemTra> danhSach = bang == tblNoiThat ? dsNoiThat : dsNgoaiThat;
+		if (row < 0 || row >= danhSach.size()) {
+			return;
+		}
+		HangMucKiemTra item = danhSach.remove(row);
+		maHangMucDaChon.remove(item.getMaHangMuc());
+		tinhTrangTheoHangMuc.remove(item.getMaHangMuc());
+		capNhatBangHangMuc(model, danhSach);
+	}
+
+	private void capNhatBangHangMuc(DefaultTableModel model, List<HangMucKiemTra> danhSach) {
+		JTable bang = model == modelNoiThat ? tblNoiThat : tblNgoaiThat;
+		if (bang.isEditing()) {
+			bang.getCellEditor().stopCellEditing();
+		}
+		for (int i = 0; i < model.getRowCount(); i++) {
+			String ma = (String) model.getValueAt(i, 4);
+			if (ma != null && maHangMucDaChon.contains(ma)) {
+				tinhTrangTheoHangMuc.put(ma, String.valueOf(model.getValueAt(i, 2)));
+			}
+		}
+		model.setRowCount(0);
+		for (int i = 0; i < danhSach.size(); i++) {
+			HangMucKiemTra item = danhSach.get(i);
+			model.addRow(new Object[] { i + 1, item.getTenHangMuc(),
+					tinhTrangTheoHangMuc.getOrDefault(item.getMaHangMuc(), ""), "X", item.getMaHangMuc() });
+		}
+		JScrollPane scroll = model == modelNoiThat ? scrollNoiThat : scrollNgoaiThat;
+		capNhatChieuCaoBang(scroll, danhSach.size());
+	}
+
+	private void capNhatChieuCaoBang(JScrollPane scroll, int soDong) {
+		if (scroll == null) {
+			return;
+		}
+		int soDongHienThi = Math.max(5, soDong);
+		scroll.setPreferredSize(new Dimension(100, 38 + soDongHienThi * 42 + 2));
+		scroll.revalidate();
+	}
+
+	private void dongBoChon(JPanel nhom, JPanel boChon) {
+		nhom.remove(boChon);
+		nhom.revalidate();
+		nhom.repaint();
+	}
+
+	private static class BangRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		BangRenderer(int align) {
+			setHorizontalAlignment(align);
+			setBorder(new EmptyBorder(0, 8, 0, 8));
+		}
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focused,
+				int row, int column) {
+			Component c = super.getTableCellRendererComponent(table, value, selected, focused, row, column);
+			c.setBackground(selected ? ROW_SELECTED : (row % 2 == 0 ? Color.WHITE : new Color(250, 251, 253)));
+			c.setForeground(TEXT_DARK);
+			return c;
+		}
+	}
+
+	private static class XoaRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		XoaRenderer() {
+			setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			setFont(FONT_SMALL_BOLD);
+			setForeground(new Color(190, 60, 60));
+		}
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focused,
+				int row, int column) {
+			Component c = super.getTableCellRendererComponent(table, value, selected, focused, row, column);
+			c.setBackground(selected ? ROW_SELECTED : (row % 2 == 0 ? Color.WHITE : new Color(250, 251, 253)));
+			return c;
+		}
+	}
+
+	private static class HeaderRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		HeaderRenderer() {
+			setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			setFont(FONT_SMALL_BOLD);
+			setForeground(Color.WHITE);
+			setBackground(PRIMARY);
+			setBorder(new EmptyBorder(0, 8, 0, 8));
+		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -457,9 +678,12 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		txtHangXe.setText("");
 		txtSoKm.setText("");
 		txtYeuCau.setText("");
-		for (Input o : dsTinhTrang) {
-			o.setText("");
-		}
+		dsNoiThat.clear();
+		dsNgoaiThat.clear();
+		maHangMucDaChon.clear();
+		tinhTrangTheoHangMuc.clear();
+		modelNoiThat.setRowCount(0);
+		modelNgoaiThat.setRowCount(0);
 		refresh();
 		txtSoDienThoai.requestFocusInWindow();
 	}
