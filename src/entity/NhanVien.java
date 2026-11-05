@@ -38,7 +38,7 @@ public class NhanVien {
 		return maNV;
 	}
 
-	public void setMaNV(String maNV) {
+	public void setMaNV(String maNV)  {
 		this.maNV = maNV;
 	}
 
