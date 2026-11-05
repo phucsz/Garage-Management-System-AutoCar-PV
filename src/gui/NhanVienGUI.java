@@ -65,10 +65,10 @@ public class NhanVienGUI extends JPanel {
 	private static final String[] VAI_TRO = { "Quản lý", "Tiếp nhận viên", "Kỹ thuật viên", "Thu ngân" };
 	private static final String[] TRANG_THAI = { "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc" };
 	private static final String[] GIOI_TINH = { "Nam", "Nữ", "Khác" };
-	private static final String TXT_THAO_TAC = "[i] Xem · [i] Sửa · [i] Đổi mật khẩu";
-	private static final String TXT_THAO_TAC_XEM = "[i] Xem";
-	private static final String TXT_THAO_TAC_SUA = "[i] Sửa";
-	private static final String TXT_THAO_MAT_KHAU = "[i] Đổi mật khẩu";
+	private static final String TXT_THAO_TAC = " Xem - Sửa - Đổi mật khẩu";
+	private static final String TXT_THAO_TAC_XEM = "Xem";
+	private static final String TXT_THAO_TAC_SUA = "Sửa";
+	private static final String TXT_THAO_MAT_KHAU = "Đổi mật khẩu";
 	private static final int COL_THAO_TAC = 5;
 	private static final int PAD_TRAI = 16;
 	private static final Map<String, String> MA_VAI_TRO = new HashMap<>();

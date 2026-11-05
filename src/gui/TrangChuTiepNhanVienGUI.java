@@ -35,17 +35,19 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 
 	private final LapPhieuTiepNhanGUI lapPhieuGUI;
 	private final TraCuuPhieuTiepNhanGUI traCuuGUI;
+	private final KhachHangVaXeGUI khachHangVaXeGUI;
 
 	public TrangChuTiepNhanVienGUI(String hoTen) {
 		super(hoTen, "Tiếp nhận viên", MENU);
 
 		// Lập phiếu -> bấm "Tra cứu phiếu tiếp nhận" -> sang màn hình tra cứu (vẫn tô sáng nút "Tiếp Nhận Xe")
 		lapPhieuGUI = new LapPhieuTiepNhanGUI(hoTen, () -> hienThi(KEY_TRA_CUU_TIEP_NHAN, KEY_TIEP_NHAN));
-		// Tra cứu -> bấm "Lập phiếu tiếp nhận" -> quay lại màn hình lập phiếu
 		traCuuGUI = new TraCuuPhieuTiepNhanGUI(() -> hienThi(KEY_TIEP_NHAN));
+		khachHangVaXeGUI = new KhachHangVaXeGUI(() -> hienThi(KEY_TRANG_CHU));
 
 		themCard(KEY_TIEP_NHAN, lapPhieuGUI);
 		themCard(KEY_TRA_CUU_TIEP_NHAN, traCuuGUI);
+		themCard(KEY_KHACH_HANG, khachHangVaXeGUI);
 		// themCard(KEY_KHACH_HANG, new KhachHangGUI());
 		// themCard(KEY_SUA_CHUA, new LapPhieuSuaChuaGUI());
 
