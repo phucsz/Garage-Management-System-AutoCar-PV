@@ -445,7 +445,7 @@ public final class UITheme {
 		 */
 		public void themIconBenPhai(String iconPath, Runnable onClick) {
 			setLayout(new BorderLayout());
-			ImageSlot slot = new ImageSlot(iconPath, 16, 16, false);
+			ImageSlot slot = new ImageSlot(iconPath, 18, 18, false);
 			if (onClick != null) {
 				slot.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				slot.addMouseListener(new MouseAdapter() {

@@ -21,6 +21,7 @@ import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import business.KhachHangVaXeBUS;
+import connectDB.ConnectDB;
+import entity.KhachHang;
+import entity.Xe;
+
 /**
  * Màn hình KHÁCH HÀNG & XE (JPanel) - được nhúng vào CardLayout của trang chủ.
  *
@@ -53,10 +59,7 @@ import javax.swing.table.JTableHeader;
  *  2. Danh sách khách hàng (bảng có phân trang, cột Thao tác: Xem · Sửa · Xóa)
  *  3. Danh sách xe khách đã tiếp nhận - MẶC ĐỊNH ẨN, chỉ hiện khi đang chọn 1 dòng khách hàng
  *
- * KHÔNG có dữ liệu mẫu. Mọi chỗ cần lấy / ghi dữ liệu từ CSDL đều là các hàm có đánh dấu "TODO":
- *  - layDanhSachKhachHang(...)     : đổ dữ liệu lên bảng Danh sách khách hàng
- *  - layDanhSachXeCuaKhach(...)    : đổ dữ liệu lên bảng Danh sách xe
- *  - luuKhachHang / xoaKhachHang / capNhatXe : ghi thay đổi xuống CSDL
+ * Dữ liệu được tải và ghi trực tiếp qua KhachHangVaXeBUS.
  */
 public class KhachHangVaXeGUI extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -83,7 +86,7 @@ public class KhachHangVaXeGUI extends JPanel {
 
 	// =====================================================================
 	// DỮ LIỆU: dòng khách hàng / dòng xe.
-	// TODO: có thể thay bằng entity.KhachHang / entity.Xe của project (nhớ sửa lại các hàm bên dưới).
+	// Các row giữ dữ liệu cần hiển thị, còn thao tác CSDL dùng entity của project.
 	// =====================================================================
 	private static class KhachHangRow {
 		final String ma, hoTen, sdt, diaChi;
@@ -116,6 +119,7 @@ public class KhachHangVaXeGUI extends JPanel {
 	private int trang = 1;
 	private KhachHangRow khachDangChon;
 	private boolean dangDongBo = false; // chặn sự kiện chọn dòng khi code tự đổ dữ liệu
+	private KhachHangVaXeBUS khachHangVaXeBUS;
 
 	// ---- Thẻ tra cứu ----
 	private Input txtHoTenTim, txtSdtTim;
@@ -140,6 +144,7 @@ public class KhachHangVaXeGUI extends JPanel {
 	 */
 	public KhachHangVaXeGUI(Runnable quayVeTrangChu) {
 		this.quayVeTrangChu = quayVeTrangChu;
+		khoiTaoDuLieu();
 		setLayout(new BorderLayout());
 		setBackground(BG);
 
@@ -172,6 +177,17 @@ public class KhachHangVaXeGUI extends JPanel {
 		refresh();
 	}
 
+	private void khoiTaoDuLieu() {
+		try {
+			ConnectDB.getInstance().connect();
+			khachHangVaXeBUS = new KhachHangVaXeBUS();
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(this, "Không thể kết nối CSDL để tải dữ liệu khách hàng.", "Lỗi",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
+
 	/** Gọi mỗi khi chuyển sang màn hình này: tải lại danh sách khách hàng và ẩn danh sách xe. */
 	public void refresh() {
 		khachDangChon = null;
@@ -179,28 +195,45 @@ public class KhachHangVaXeGUI extends JPanel {
 	}
 
 	// =====================================================================
-	// TODO: KẾT NỐI CƠ SỞ DỮ LIỆU - BẠN CHỈ CẦN SỬA CÁC HÀM TRONG KHỐI NÀY
+	// KẾT NỐI CƠ SỞ DỮ LIỆU
 	// =====================================================================
 
 	/**
 	 * Lấy danh sách khách hàng theo bộ lọc. Cả hai tham số có thể rỗng (= không lọc).
-	 * TODO: gọi DAO, ví dụ: khachHangDAO.timKiem(hoTen, sdt), rồi đổi mỗi entity thành
-	 * new KhachHangRow(ma, hoTen, sdt, diaChi).
+	 * Dữ liệu được lấy qua BUS và chuyển thành row hiển thị.
 	 */
 	private List<KhachHangRow> layDanhSachKhachHang(String hoTen, String sdt) {
 		List<KhachHangRow> ds = new ArrayList<>();
-		// TODO: ds.add(new KhachHangRow(kh.getMaKH(), kh.getHoTen(), kh.getSdt(), kh.getDiaChi()));
+		if (khachHangVaXeBUS == null) {
+			return ds;
+		}
+		try {
+			for (KhachHang kh : khachHangVaXeBUS.timKiemKhachHang(hoTen, sdt)) {
+				ds.add(new KhachHangRow(kh.getMaKH(), kh.getHoTenKH(), kh.getSdt(), kh.getDiaChi()));
+			}
+		} catch (SQLException e) {
+			baoLoiCSDL("Không thể tải danh sách khách hàng.", e);
+		}
 		return ds;
 	}
 
 	/**
 	 * Lấy danh sách xe mà khách hàng đã được tiếp nhận.
-	 * TODO: gọi DAO, ví dụ: xeDAO.layXeCuaKhachHang(maKhachHang), rồi đổi mỗi entity thành
-	 * new XeRow(bienSo, loaiXe, mauXe, hang, soThangDaDi, soKm).
+	 * Dữ liệu được lấy qua BUS và chuyển thành row hiển thị.
 	 */
 	private List<XeRow> layDanhSachXeCuaKhach(String maKhachHang) {
 		List<XeRow> ds = new ArrayList<>();
-		// TODO: ds.add(new XeRow(x.getBienSo(), x.getLoaiXe(), x.getMauXe(), x.getHang(), x.getSoThangDaDi(), x.getSoKm()));
+		if (khachHangVaXeBUS == null) {
+			return ds;
+		}
+		try {
+			for (Xe x : khachHangVaXeBUS.getXeTheoKhachHang(maKhachHang)) {
+				ds.add(new XeRow(x.getBienSoXe(), x.getLoaiXe(), x.getMauXe(), x.getHangXe(),
+						x.getSoThangDaDi(), (int) x.getSoKmHienTai()));
+			}
+		} catch (SQLException e) {
+			baoLoiCSDL("Không thể tải danh sách xe của khách hàng.", e);
+		}
 		return ds;
 	}
 
@@ -209,20 +242,50 @@ public class KhachHangVaXeGUI extends JPanel {
 	 * @return true nếu lưu thành công
 	 */
 	private boolean luuKhachHang(KhachHangRow kh, boolean themMoi) {
-		// TODO: themMoi ? khachHangDAO.them(...) : khachHangDAO.capNhat(...)
-		return false;
+		if (khachHangVaXeBUS == null) {
+			return false;
+		}
+		KhachHang entity = new KhachHang(kh.ma, kh.hoTen, null, null, null, kh.sdt, kh.diaChi, null);
+		try {
+			return themMoi ? khachHangVaXeBUS.themKhachHang(entity)
+					: khachHangVaXeBUS.capNhatKhachHang(entity);
+		} catch (SQLException e) {
+			baoLoiCSDL(themMoi ? "Không thể thêm khách hàng." : "Không thể cập nhật khách hàng.", e);
+			return false;
+		}
 	}
 
 	/** @return true nếu xóa thành công */
 	private boolean xoaKhachHang(String maKhachHang) {
-		// TODO: return khachHangDAO.xoa(maKhachHang);
-		return false;
+		if (khachHangVaXeBUS == null) {
+			return false;
+		}
+		try {
+			return khachHangVaXeBUS.xoaKhachHang(maKhachHang);
+		} catch (SQLException e) {
+			baoLoiCSDL("Không thể xóa khách hàng. Có thể khách hàng đang có xe hoặc phiếu liên quan.", e);
+			return false;
+		}
 	}
 
 	/** Cập nhật thông tin một xe của khách hàng. @return true nếu thành công */
 	private boolean capNhatXe(String maKhachHang, XeRow xe) {
-		// TODO: return xeDAO.capNhat(...);
-		return false;
+		if (khachHangVaXeBUS == null) {
+			return false;
+		}
+		Xe entity = new Xe(xe.bienSo, xe.loaiXe, 0, xe.hang, xe.mauXe, xe.soThangDaDi, xe.soKm,
+				new KhachHang(maKhachHang));
+		try {
+			return khachHangVaXeBUS.capNhatXe(entity);
+		} catch (SQLException e) {
+			baoLoiCSDL("Không thể cập nhật thông tin xe.", e);
+			return false;
+		}
+	}
+
+	private void baoLoiCSDL(String thongBao, SQLException e) {
+		JOptionPane.showMessageDialog(this, thongBao, "Lỗi", JOptionPane.ERROR_MESSAGE);
+		e.printStackTrace();
 	}
 
 	// =====================================================================
