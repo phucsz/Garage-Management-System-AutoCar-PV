@@ -61,15 +61,19 @@ public final class UITheme {
 	public static final String IMG_DICH_VU = IMG_DIR + "icon_dichVu.png";
 	public static final String IMG_KHACH_HANG = IMG_DIR + "icon_khachHang.png";
 	public static final String IMG_NHAN_VIEN = IMG_DIR + "icon_nhanVien.png";
+	public static final String IMG_KHUYEN_MAI = IMG_DIR + "icon_khuyenMai.png";
 	public static final String IMG_BAO_CAO = IMG_DIR + "icon_baoCao.png";
 	public static final String IMG_CA_NHAN = IMG_DIR + "icon_caNhan.png";
 	public static final String IMG_DANG_XUAT = IMG_DIR + "icon_dangXuat.png";
-	public static final String IMG_KHUYEN_MAI = IMG_DIR + "icon_khuyenMai.png";
-	
+
 	public static final String IMG_TIM_KIEM = IMG_DIR + "icon_timKiem.png"; // 16 x 16
 	public static final String IMG_THEM = IMG_DIR + "icon_them.png";
 	public static final String IMG_QUAY_LAI = IMG_DIR + "icon_quayLai.png";
 	public static final String IMG_LUU = IMG_DIR + "icon_luu.png";
+	public static final String IMG_LICH = IMG_DIR + "icon_lich.png";
+	public static final String IMG_XEM = IMG_DIR + "icon_xem.png";
+	public static final String IMG_IN = IMG_DIR + "icon_in.png";
+	public static final String IMG_DAT_LAI = IMG_DIR + "icon_datLai.png";
 
 	// =====================================================================
 	// KÍCH THƯỚC
@@ -435,6 +439,30 @@ public final class UITheme {
 			});
 		}
 
+		/**
+		 * Gắn icon (VÙNG CHÈN ẢNH) vào mép phải ô nhập, ví dụ icon tìm kiếm / lịch.
+		 * @param onClick hành động khi bấm vào icon (null = chỉ để trang trí)
+		 */
+		public void themIconBenPhai(String iconPath, Runnable onClick) {
+			setLayout(new BorderLayout());
+			ImageSlot slot = new ImageSlot(iconPath, 16, 16, false);
+			if (onClick != null) {
+				slot.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				slot.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						onClick.run();
+					}
+				});
+			}
+			JPanel wrap = new JPanel(new java.awt.GridBagLayout());
+			wrap.setOpaque(false);
+			wrap.setBorder(new EmptyBorder(0, 0, 0, 12));
+			wrap.add(slot);
+			add(wrap, BorderLayout.EAST);
+			setBorder(new EmptyBorder(0, 12, 0, 36));
+		}
+
 		@Override
 		protected void paintComponent(Graphics g) {
 			Graphics2D g2 = (Graphics2D) g.create();
@@ -530,6 +558,12 @@ public final class UITheme {
 
 		public void setNote(String note) {
 			lblNote.setText(note);
+		}
+
+		/** Gắn icon (VÙNG CHÈN ẢNH) bên trái tiêu đề thẻ. */
+		public void setTitleIcon(String iconPath) {
+			lblTitle.setIcon(new SlotIcon(iconPath, 18, 18, DASH_GRAY));
+			lblTitle.setIconTextGap(8);
 		}
 
 		@Override

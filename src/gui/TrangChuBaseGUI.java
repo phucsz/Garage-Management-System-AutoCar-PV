@@ -73,6 +73,7 @@ public abstract class TrangChuBaseGUI extends JFrame implements ActionListener {
 	public static final String KEY_KHACH_HANG = "khachhang";
 	public static final String KEY_TIEP_NHAN = "tiepnhan";
 	public static final String KEY_SUA_CHUA = "suachua";
+	public static final String KEY_TRA_CUU_TIEP_NHAN = "tracuutiepnhan"; // màn hình con của "Tiếp nhận xe"
 
 	// Kỹ thuật viên
 	public static final String KEY_DS_CONG_VIEC = "dscongviec";
@@ -193,10 +194,19 @@ public abstract class TrangChuBaseGUI extends JFrame implements ActionListener {
 
 	/** Chuyển sang card theo khóa và tô sáng nút menu tương ứng. */
 	public void hienThi(String key) {
-		onHienThi(key);
-		cardLayout.show(content, key);
+		hienThi(key, key);
+	}
+
+	/**
+	 * Chuyển sang card {@code cardKey} nhưng tô sáng nút menu {@code menuKey}.
+	 * Dùng cho các màn hình "con" không có nút riêng trên sidebar
+	 * (ví dụ: màn hình Tra cứu phiếu tiếp nhận vẫn tô sáng nút "Tiếp Nhận Xe").
+	 */
+	public void hienThi(String cardKey, String menuKey) {
+		onHienThi(cardKey);
+		cardLayout.show(content, cardKey);
 		for (Map.Entry<String, SidebarButton> en : dsNut.entrySet()) {
-			en.getValue().setActive(en.getKey().equals(key));
+			en.getValue().setActive(en.getKey().equals(menuKey));
 		}
 	}
 

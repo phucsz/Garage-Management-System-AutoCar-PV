@@ -6,6 +6,11 @@ import javax.swing.SwingUtilities;
 /**
  * Trang chủ dành cho vai trò TIẾP NHẬN VIÊN.
  * Menu chính: Trang chủ, Khách hàng & Xe, Tiếp nhận xe, Lập phiếu sửa chữa, Báo cáo thống kê.
+ *
+ * Nút "Tiếp Nhận Xe" mở 2 màn hình con trong CardLayout:
+ *  - KEY_TIEP_NHAN          : LapPhieuTiepNhanGUI   (mặc định khi bấm nút menu)
+ *  - KEY_TRA_CUU_TIEP_NHAN  : TraCuuPhieuTiepNhanGUI (mở từ nút "Tra cứu phiếu tiếp nhận" ở góc trên phải)
+ * Cả hai đều tô sáng nút "Tiếp Nhận Xe" trên sidebar.
  */
 public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 	private static final long serialVersionUID = 1L;
@@ -15,12 +20,12 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 	// Ví dụ: "/images/icon_trangChu.png" hoặc chỉ cần "icon_trangChu.png" (tự hiểu là nằm trong /images/).
 	// Để rỗng thì sẽ hiện khung viền nét đứt.
 	// =====================================================================
-	private static final String ICON_TRANG_CHU = IMG_TRANG_CHU; // TODO: nhập đường dẫn
-	private static final String ICON_KHACH_HANG = IMG_KHACH_HANG; // TODO: nhập đường dẫn
-	private static final String ICON_TIEP_NHAN = IMG_TIEP_NHAN; // TODO: nhập đường dẫn
-	private static final String ICON_SUA_CHUA = IMG_SUA_CHUA; // TODO: nhập đường dẫn
-	private static final String ICON_BAO_CAO = IMG_BAO_CAO; // TODO: nhập đường dẫn
-
+	private static final String ICON_TRANG_CHU = IMG_TRANG_CHU; 
+	private static final String ICON_KHACH_HANG = IMG_KHACH_HANG;
+	private static final String ICON_TIEP_NHAN = IMG_TIEP_NHAN; 
+	private static final String ICON_SUA_CHUA = IMG_SUA_CHUA; 
+	private static final String ICON_BAO_CAO = IMG_BAO_CAO;
+	
 	private static final MucMenu[] MENU = {
 			new MucMenu(KEY_TRANG_CHU, "Trang Chủ", ICON_TRANG_CHU),
 			new MucMenu(KEY_KHACH_HANG, "Khách Hàng & Xe", ICON_KHACH_HANG),
@@ -28,16 +33,32 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 			new MucMenu(KEY_SUA_CHUA, "Lập Phiếu Sửa Chữa", ICON_SUA_CHUA),
 			new MucMenu(KEY_BAO_CAO, "Báo Cáo Thống Kê", ICON_BAO_CAO) };
 
+	private final LapPhieuTiepNhanGUI lapPhieuGUI;
+	private final TraCuuPhieuTiepNhanGUI traCuuGUI;
+
 	public TrangChuTiepNhanVienGUI(String hoTen) {
 		super(hoTen, "Tiếp nhận viên", MENU);
 
-		// Màn hình đã làm xong thì đăng ký vào CardLayout; các mục còn lại tự có panel tạm.
-		themCard(KEY_TIEP_NHAN,
-				taoPanelTam("Tiếp nhận xe", "Gắn màn hình Lập phiếu tiếp nhận (dạng JPanel) vào đây."));
+		// Lập phiếu -> bấm "Tra cứu phiếu tiếp nhận" -> sang màn hình tra cứu (vẫn tô sáng nút "Tiếp Nhận Xe")
+		lapPhieuGUI = new LapPhieuTiepNhanGUI(hoTen, () -> hienThi(KEY_TRA_CUU_TIEP_NHAN, KEY_TIEP_NHAN));
+		// Tra cứu -> bấm "Lập phiếu tiếp nhận" -> quay lại màn hình lập phiếu
+		traCuuGUI = new TraCuuPhieuTiepNhanGUI(() -> hienThi(KEY_TIEP_NHAN));
+
+		themCard(KEY_TIEP_NHAN, lapPhieuGUI);
+		themCard(KEY_TRA_CUU_TIEP_NHAN, traCuuGUI);
 		// themCard(KEY_KHACH_HANG, new KhachHangGUI());
 		// themCard(KEY_SUA_CHUA, new LapPhieuSuaChuaGUI());
 
 		hoanTat();
+	}
+
+	@Override
+	protected void onHienThi(String key) {
+		if (KEY_TIEP_NHAN.equals(key)) {
+			lapPhieuGUI.refresh(); // cập nhật mã phiếu / ngày / giờ
+		} else if (KEY_TRA_CUU_TIEP_NHAN.equals(key)) {
+			traCuuGUI.datLai(); // luôn bắt đầu với 0 kết quả
+		}
 	}
 
 	public static void main(String[] args) {

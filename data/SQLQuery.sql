@@ -40,6 +40,7 @@ insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) value
 insert into TaiKhoan values
 ('NV2024001',ENCRYPTBYPASSPHRASE('123','15092006'),'QUANLY')
 
+
 /*--select * from VaiTro
 select * from NhanVien
 select * from TaiKhoan
