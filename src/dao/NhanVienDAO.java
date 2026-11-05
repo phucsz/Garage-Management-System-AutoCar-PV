@@ -67,7 +67,21 @@ public class NhanVienDAO {
 			
 			nv = new NhanVien(maNV, hoTenNV, noiSinh, ngaySinh, gioiTinh, cccd, sdt, diaChi, email, trangThai);
 		}
+
 		return nv;
+	}
+
+	public NhanVien timTheoHoTen(String hoTen) throws SQLException {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		String sql = "SELECT maNV, hoTenNV FROM NhanVien WHERE hoTenNV = ?";
+		PreparedStatement stmt = con.prepareStatement(sql);
+		stmt.setString(1, hoTen);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			return new NhanVien(rs.getString("maNV"));
+		}
+		return null;
 	}
 	
 	public boolean themNV(NhanVien nv) throws SQLException {

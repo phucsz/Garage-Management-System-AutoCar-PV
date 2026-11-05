@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import connectDB.ConnectDB;
@@ -11,6 +12,15 @@ import entity.KhachHang;
 
 public class KhachHangDAO {
 
+	private Connection getConnection() throws SQLException {
+		Connection con = ConnectDB.getConnection();
+		if (con == null || con.isClosed()) {
+			ConnectDB.getInstance().connect();
+			con = ConnectDB.getConnection();
+		}
+		return con;
+	}
+	
 	public ArrayList<KhachHang> timKiem(String hoTen, String sdt) throws SQLException {
 		ArrayList<KhachHang> ds = new ArrayList<>();
 		String sql = "SELECT maKH, hoTenKH, noiSinh, ngaySinh, CCCD, sdt, diaChi, email "
@@ -36,6 +46,7 @@ public class KhachHangDAO {
 			ganGiaTri(stmt, kh);
 			return stmt.executeUpdate() > 0;
 		}
+
 	}
 
 	public boolean capNhatKH(KhachHang kh) throws SQLException {
@@ -60,7 +71,9 @@ public class KhachHangDAO {
 	public String taoMaKHMoi() throws SQLException {
 		String sql = "SELECT maKH FROM KhachHang WHERE maKH LIKE 'KH%'";
 		int soThuTu = 0;
-		try (PreparedStatement stmt = getConnection().prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+		try (
+				PreparedStatement stmt = getConnection().prepareStatement(sql); 
+				ResultSet rs = stmt.executeQuery()) {
 			while (rs.next()) {
 				String ma = rs.getString(1);
 				if (ma != null && ma.matches("KH\\d+")) {
@@ -85,13 +98,26 @@ public class KhachHangDAO {
 		stmt.setString(7, kh.getDiaChi());
 		stmt.setString(8, kh.getEmail());
 	}
-
-	private Connection getConnection() throws SQLException {
-		Connection con = ConnectDB.getConnection();
-		if (con == null || con.isClosed()) {
-			ConnectDB.getInstance().connect();
-			con = ConnectDB.getConnection();
+	
+	public KhachHang timTheoSdt(String sdt) throws SQLException {
+		String sql = "SELECT * FROM KhachHang where sdt = ?";
+		PreparedStatement stmt = getConnection().prepareStatement(sql); 
+		stmt.setString(1,sdt);
+		ResultSet rs = stmt.executeQuery();
+		KhachHang kh = null;
+		if (rs.next()) {
+			String maKH = rs.getString(1);
+			String hoTenKH = rs.getString(2);
+			String noiSinh = rs.getString(3);
+			LocalDate ngaySinh = null;
+			if (rs.getDate(4)!=null) ngaySinh = rs.getDate(4).toLocalDate();
+			String cccd = rs.getString(5);
+			String diaChi = rs.getString(7);
+			String email = rs.getString(8);
+			
+			kh = new KhachHang(maKH, hoTenKH, noiSinh, ngaySinh, cccd, sdt, diaChi, email);
 		}
-		return con;
+		return kh;
 	}
+	
 }

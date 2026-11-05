@@ -1,6 +1,9 @@
 package gui;
 
 import static gui.UITheme.*;
+
+import java.sql.SQLException;
+
 import javax.swing.SwingUtilities;
 
 /**
@@ -37,7 +40,7 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 	private final TraCuuPhieuTiepNhanGUI traCuuGUI;
 	private final KhachHangVaXeGUI khachHangVaXeGUI;
 
-	public TrangChuTiepNhanVienGUI(String hoTen) {
+	public TrangChuTiepNhanVienGUI(String hoTen) throws SQLException {
 		super(hoTen, "Tiếp nhận viên", MENU);
 
 		// Lập phiếu -> bấm "Tra cứu phiếu tiếp nhận" -> sang màn hình tra cứu (vẫn tô sáng nút "Tiếp Nhận Xe")
@@ -57,13 +60,25 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 	@Override
 	protected void onHienThi(String key) {
 		if (KEY_TIEP_NHAN.equals(key)) {
-			lapPhieuGUI.refresh(); // cập nhật mã phiếu / ngày / giờ
+			try {
+				lapPhieuGUI.refresh();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} // cập nhật mã phiếu / ngày / giờ
 		} else if (KEY_TRA_CUU_TIEP_NHAN.equals(key)) {
-			traCuuGUI.datLai(); // luôn bắt đầu với 0 kết quả
+			traCuuGUI.datLai(); // mặc định tra cứu các phiếu trong ngày hôm nay
 		}
 	}
 
 	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> new TrangChuTiepNhanVienGUI("Lê Thu Hà").setVisible(true));
+		SwingUtilities.invokeLater(() -> {
+			try {
+				new TrangChuTiepNhanVienGUI("Lê Thu Hà").setVisible(true);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 	}
 }

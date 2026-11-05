@@ -12,8 +12,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,10 +41,21 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+
+import business.LapPhieuTiepNhanBUS;
+import connectDB.ConnectDB;
+
 import javax.swing.table.DefaultTableCellRenderer;
 
 import dao.HangMucKiemTraDAO;
 import entity.HangMucKiemTra;
+import entity.ChiTietHangMuc;
+import entity.KhachHang;
+import entity.NhanVien;
+import entity.PhieuTiepNhan;
+import entity.Xe;
+
+
 
 /**
  * Màn hình LẬP PHIẾU TIẾP NHẬN (JPanel) - được nhúng vào CardLayout của TrangChuTiepNhanVienGUI.
@@ -53,12 +65,11 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private static final DateTimeFormatter FMT_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-	private static final DateTimeFormatter FMT_GIO = DateTimeFormatter.ofPattern("H:mm");
 
 	private final Runnable moTraCuu;
 
-	private Input txtMaPhieu, txtNgayTiepNhan, txtGioTiepNhan;
-	private Input txtSoDienThoai, txtKhachHang, txtDiaChi;
+	private Input txtMaPhieu, txtNgayTiepNhan;
+	private Input txtSoDienThoai, txtKhachHang;
 	private Input txtBienSo, txtHangXe, txtSoKm;
 	private JTextArea txtYeuCau;
 	private Input txtKyThuatVien;
@@ -75,13 +86,17 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	private JScrollPane scrollNoiThat;
 	private JScrollPane scrollNgoaiThat;
 	private boolean dangNapGoiY;
-
+	
+	private LapPhieuTiepNhanBUS ptn_bus;
 	/**
 	 * @param nguoiTiepNhan tên người tiếp nhận hiện trên ô "Kỹ thuật viên tiếp nhận" (chỉ đọc)
 	 * @param moTraCuu      hành động chuyển sang màn hình Tra cứu phiếu tiếp nhận
+	 * @throws SQLException 
 	 */
-	public LapPhieuTiepNhanGUI(String nguoiTiepNhan, Runnable moTraCuu) {
+	public LapPhieuTiepNhanGUI(String nguoiTiepNhan, Runnable moTraCuu) throws SQLException {	
 		this.moTraCuu = moTraCuu;
+		ConnectDB.getInstance().connect();
+		ptn_bus = new LapPhieuTiepNhanBUS();
 		setLayout(new BorderLayout());
 		setBackground(BG);
 
@@ -101,12 +116,12 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		refresh();
 	}
 
-	/** Gọi mỗi khi màn hình được hiển thị: cập nhật mã phiếu, ngày, giờ (không xóa dữ liệu đang nhập). */
-	public void refresh() {
+	/** Gọi mỗi khi màn hình được hiển thị: cập nhật mã phiếu, ngày, giờ (không xóa dữ liệu đang nhập). 
+	 * @throws SQLException */
+	public void refresh() throws SQLException {
 		LocalDate homNay = LocalDate.now();
-		//txtMaPhieu.setText(DuLieuMauTiepNhan.taoMaPhieu(homNay));
+		txtMaPhieu.setText(taoMaPhieu(homNay));
 		txtNgayTiepNhan.setText(homNay.format(FMT_NGAY));
-		txtGioTiepNhan.setText(LocalTime.now().format(FMT_GIO));
 	}
 
 	// =====================================================================
@@ -194,20 +209,36 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 
 		txtMaPhieu = new Input(null, true);
 		txtNgayTiepNhan = new Input(null, true);
-		txtGioTiepNhan = new Input(null, true);
 
 		txtSoDienThoai = new Input("Nhập số điện thoại khách hàng", false);
-		txtSoDienThoai.themIconBenPhai("/images/icon_timKiemBlack.png", this::timKhachHang);
+		txtSoDienThoai.themIconBenPhai("/images/icon_timKiemBlack.png", () -> {
+			try {
+				timKhachHang();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
 		txtKhachHang = new Input(null, false);
-		txtDiaChi = new Input(null, true);
 
 		txtBienSo = new Input("Nhập biển số xe", false);
-		txtBienSo.themIconBenPhai("/images/icon_timKiemBlack.png", this::timXe);
+		txtBienSo.themIconBenPhai("/images/icon_timKiemBlack.png", () -> {try {timXe();} catch (SQLException e) {e.printStackTrace();}});
 		txtHangXe = new Input("Nhập hãng / dòng xe", false);
 		txtSoKm = new Input("Nhập số km", false);
 
-		txtSoDienThoai.addActionListener(e -> timKhachHang());
-		txtBienSo.addActionListener(e -> timXe());
+		txtSoDienThoai.addActionListener(e -> {
+			try {
+				timKhachHang();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		});
+		txtBienSo.addActionListener(e -> {
+			try {
+				timXe();
+			} catch (SQLException e1) {		
+				e1.printStackTrace();
+			}
+		});
 
 		themO(form, labeled("Mã phiếu tiếp nhận", txtMaPhieu), 1, 0, 3);
 		themO(form, labeled("Ngày tiếp nhận", txtNgayTiepNhan), 1, 3, 3);
@@ -558,7 +589,14 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		ActionButton btnLap = new ActionButton("Lập phiếu tiếp nhận", ActionButton.KIEU_CHINH);
 		ActionButton btnNhapLai = new ActionButton("Nhập lại", ActionButton.KIEU_VIEN_XANH);
 		btnLap.addActionListener(e -> lapPhieu());
-		btnNhapLai.addActionListener(e -> nhapLai());
+		btnNhapLai.addActionListener(e -> {
+			try {
+				nhapLai();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
 		p.add(btnLap);
 		p.add(btnNhapLai);
 		return p;
@@ -567,113 +605,132 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	// =====================================================================
 	// XỬ LÝ NGHIỆP VỤ
 	// =====================================================================
-
-	/** Tìm khách hàng theo số điện thoại và điền Khách hàng + Địa chỉ. */
-	private void timKhachHang() {
-//		String so = DuLieuMauTiepNhan.chiSo(txtSoDienThoai.getText());
-//		if (so.isEmpty()) {
-//			baoLoi("Vui lòng nhập số điện thoại cần tìm!", txtSoDienThoai);
-//			return;
-//		}
-//		// TODO: thay bằng khachHangDAO.timTheoSdt(so)
-//		DuLieuMauTiepNhan.KhachHang kh = DuLieuMauTiepNhan.timKhachHang(so);
-//		if (kh == null) {
-//			txtKhachHang.setText("");
-//			txtDiaChi.setText("");
-//			JOptionPane.showMessageDialog(this, "Không tìm thấy khách hàng có số điện thoại " + so + ".",
-//					"Thông báo", JOptionPane.INFORMATION_MESSAGE);
-//			return;
-//		}
-//		txtKhachHang.setText(kh.ten);
-//		txtDiaChi.setText(kh.diaChi);
-//		txtBienSo.requestFocusInWindow();
+	/** tự động phát sinh mã phiếu */
+	public String taoMaPhieu(LocalDate ngay) throws SQLException {
+		return ptn_bus.taoMaPhieu(ngay);
 	}
 
-	/** Tìm xe theo biển số và điền Hãng / dòng xe + Số km. */
-	private void timXe() {
-//		String bs = txtBienSo.getText().trim();
-//		if (bs.isEmpty()) {
-//			baoLoi("Vui lòng nhập biển số xe cần tìm!", txtBienSo);
-//			return;
-//		}
-//		// TODO: thay bằng xeDAO.timTheoBienSo(bs)
-//		DuLieuMauTiepNhan.Xe xe = DuLieuMauTiepNhan.timXe(bs);
-//		if (xe == null) {
-//			JOptionPane.showMessageDialog(this,
-//					"Biển số này chưa có trong hệ thống. Vui lòng nhập hãng / dòng xe và số km.", "Thông báo",
-//					JOptionPane.INFORMATION_MESSAGE);
-//			txtHangXe.requestFocusInWindow();
-//			return;
-//		}
-//		txtBienSo.setText(xe.bienSo);
-//		txtHangXe.setText(xe.hangXe);
-//		txtSoKm.setText(String.valueOf(xe.soKm));
+	/** Tìm khách hàng theo số điện thoại và điền Khách hàng . 
+	 * @throws SQLException */
+	private void timKhachHang() throws SQLException {
+		String so = txtSoDienThoai.getText().trim();
+		if (so.isEmpty()) {
+			baoLoi("Vui lòng nhập số điện thoại cần tìm!", txtSoDienThoai);
+			return;
+		}
+		if (!so.matches("0\\d{9}")) {
+			baoLoi("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.", txtSoDienThoai);
+			return;
+		}
+		KhachHang kh = ptn_bus.timKHTheoSDT(so);
+		if (kh == null) {
+			txtKhachHang.setText("");
+			JOptionPane.showMessageDialog(this, "Không tìm thấy khách hàng có số điện thoại " + so + ".",
+					"Thông báo", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		txtKhachHang.setText(kh.getHoTenKH());
+		txtBienSo.requestFocusInWindow();
+	}
+
+	/** Tìm xe theo biển số và điền Hãng / dòng xe + Số km. 
+	 * @throws SQLException */
+	private void timXe() throws SQLException {
+		String bs = txtBienSo.getText().trim();
+		if (bs.isEmpty()) {
+			baoLoi("Vui lòng nhập biển số xe cần tìm!", txtBienSo);
+			return;
+		}
+		Xe xe = ptn_bus.timXeTheoBienSo(bs);
+		if (xe == null) {
+			JOptionPane.showMessageDialog(this,
+					"Biển số này chưa có trong hệ thống. Vui lòng nhập hãng / dòng xe và số km.", "Thông báo",
+					JOptionPane.INFORMATION_MESSAGE);
+			txtHangXe.requestFocusInWindow();
+			return;
+		}
+		txtHangXe.setText(xe.getHangXe());
 	}
 
 	private void lapPhieu() {
-//		String sdt = DuLieuMauTiepNhan.chiSo(txtSoDienThoai.getText());
-//		String bienSo = txtBienSo.getText().trim();
-//		String hangXe = txtHangXe.getText().trim();
-//		String soKm = txtSoKm.getText().trim();
-//
-//		if (sdt.isEmpty()) {
-//			baoLoi("Vui lòng nhập số điện thoại khách hàng!", txtSoDienThoai);
-//			return;
-//		}
-//		if (txtKhachHang.getText().trim().isEmpty()) {
-//			baoLoi("Chưa chọn khách hàng. Hãy nhập số điện thoại rồi bấm biểu tượng tìm kiếm (hoặc Enter)!",
-//					txtSoDienThoai);
-//			return;
-//		}
-//		if (bienSo.isEmpty()) {
-//			baoLoi("Vui lòng nhập biển số xe!", txtBienSo);
-//			return;
-//		}
-//		if (hangXe.isEmpty()) {
-//			baoLoi("Vui lòng nhập hãng / dòng xe!", txtHangXe);
-//			return;
-//		}
-//		if (!soKm.matches("\\d+")) {
-//			baoLoi("Số km đã đi phải là số nguyên không âm!", txtSoKm);
-//			return;
-//		}
+		String sdt = txtSoDienThoai.getText().trim();
+		String hoTen = txtKhachHang.getText().trim();
+		String bienSo = txtBienSo.getText().trim();
+		String hangXe = txtHangXe.getText().trim();
+		String soKmText = txtSoKm.getText().trim();
 
-//		DuLieuMauTiepNhan.Phieu p = new DuLieuMauTiepNhan.Phieu();
-//		p.ngay = LocalDate.now();
-//		p.gio = LocalTime.now().withSecond(0).withNano(0);
-//		p.ma = DuLieuMauTiepNhan.taoMaPhieu(p.ngay);
-//		p.sdt = sdt;
-//		p.tenKhach = txtKhachHang.getText().trim();
-//		p.diaChi = txtDiaChi.getText().trim();
-//		p.bienSo = bienSo;
-//		p.hangXe = hangXe;
-//		p.soKm = soKm;
-//		p.yeuCau = txtYeuCau.getText().trim();
-//		p.nguoiTiepNhan = txtKyThuatVien.getText().trim();
-//		p.trangThai = DuLieuMauTiepNhan.TRANG_THAI[0];
-//		for (int i = 0; i < dsHangMuc.size(); i++) {
-//			String s = dsTinhTrang.get(i).getText().trim();
-//			if (!s.isEmpty()) {
-//				p.tinhTrang.put(dsHangMuc.get(i), s); // hạng mục để trống = không có lỗi
-//			}
-//		}
-//
-//		// TODO: lưu phiếu (và xe mới nếu có) xuống CSDL
-//		if (DuLieuMauTiepNhan.timXe(bienSo) == null) {
-//			DuLieuMauTiepNhan.XE.add(new DuLieuMauTiepNhan.Xe(bienSo, hangXe, Integer.parseInt(soKm)));
-//		}
-//		DuLieuMauTiepNhan.PHIEU.add(p);
-//
-//		JOptionPane.showMessageDialog(this, "Đã lập phiếu tiếp nhận " + p.ma + ".", "Thông báo",
-//				JOptionPane.INFORMATION_MESSAGE);
-//		nhapLai();
+		if (!sdt.matches("0\\d{9}")) {
+			baoLoi("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.", txtSoDienThoai);
+			return;
+		}
+		if (hoTen.isEmpty()) {
+			baoLoi("Vui lòng nhập họ tên khách hàng.", txtKhachHang);
+			return;
+		}
+		if (bienSo.isEmpty()) {
+			baoLoi("Vui lòng nhập biển số xe.", txtBienSo);
+			return;
+		}
+		if (hangXe.isEmpty()) {
+			baoLoi("Vui lòng nhập hãng / dòng xe.", txtHangXe);
+			return;
+		}
+		if (!soKmText.matches("\\d+(\\.\\d+)?")) {
+			baoLoi("Số km đã đi phải là số không âm.", txtSoKm);
+			return;
+		}
+		if (modelNoiThat.getRowCount() + modelNgoaiThat.getRowCount() == 0) {
+			JOptionPane.showMessageDialog(this, "Vui lòng thêm ít nhất một hạng mục kiểm tra.", "Thông báo",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+
+		if (tblNoiThat.isEditing()) {
+			tblNoiThat.getCellEditor().stopCellEditing();
+		}
+		if (tblNgoaiThat.isEditing()) {
+			tblNgoaiThat.getCellEditor().stopCellEditing();
+		}
+
+		double soKm = Double.parseDouble(soKmText);
+		String maPhieu = txtMaPhieu.getText().trim();
+		PhieuTiepNhan phieu = new PhieuTiepNhan(maPhieu, LocalDateTime.now(), txtYeuCau.getText().trim(), soKm,
+				new NhanVien(txtKyThuatVien.getText().trim()), new Xe(bienSo), new KhachHang());
+		phieu.setChiTietHangMuc(new ArrayList<>());
+		themChiTietTuBang(phieu, modelNoiThat);
+		themChiTietTuBang(phieu, modelNgoaiThat);
+
+		try {
+			if (ptn_bus.lapPhieu(phieu, sdt, hoTen, hangXe)) {
+				JOptionPane.showMessageDialog(this, "Đã lập phiếu tiếp nhận " + maPhieu + ".", "Thông báo",
+						JOptionPane.INFORMATION_MESSAGE);
+				nhapLai();
+			} else {
+				JOptionPane.showMessageDialog(this, "Lập phiếu tiếp nhận thất bại.", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Không thể lập phiếu tiếp nhận",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 
-	/** Xóa các ô nhập và sinh mã phiếu mới. */
-	private void nhapLai() {
+	private void themChiTietTuBang(PhieuTiepNhan phieu, DefaultTableModel model) {
+		for (int i = 0; i < model.getRowCount(); i++) {
+			String maHangMuc = String.valueOf(model.getValueAt(i, 4));
+			String tenHangMuc = String.valueOf(model.getValueAt(i, 1));
+			String tinhTrang = String.valueOf(model.getValueAt(i, 2)).trim();
+			phieu.getChiTietHangMuc().add(new ChiTietHangMuc(phieu,
+					new HangMucKiemTra(maHangMuc, tenHangMuc, null), tinhTrang.isEmpty() ? null : tinhTrang));
+		}
+	}
+
+	/** Xóa các ô nhập và sinh mã phiếu mới. 
+	 * @throws SQLException */
+	private void nhapLai() throws SQLException {
 		txtSoDienThoai.setText("");
 		txtKhachHang.setText("");
-		txtDiaChi.setText("");
 		txtBienSo.setText("");
 		txtHangXe.setText("");
 		txtSoKm.setText("");

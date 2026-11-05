@@ -19,17 +19,16 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -45,11 +44,14 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
+import dao.PhieuTiepNhanDAO;
+import entity.PhieuTiepNhan;
+
 /**
  * Màn hình TRA CỨU PHIẾU TIẾP NHẬN (JPanel) - được nhúng vào CardLayout của TrangChuTiepNhanVienGUI.
  *
- * Mỗi lần màn hình được mở, gọi {@link #datLai()} để về trạng thái ban đầu: 0 kết quả.
- * Kết quả chỉ hiện sau khi người dùng bấm "Tra cứu" (hoặc Enter) theo bộ lọc ở thẻ "Thông tin tra cứu".
+ * Mỗi lần màn hình được mở, gọi {@link #datLai()} để tự động tra cứu các phiếu trong ngày hôm nay.
+ * Người dùng có thể thay đổi bộ lọc ở thẻ "Thông tin tra cứu" rồi bấm "Tra cứu".
  */
 public class TraCuuPhieuTiepNhanGUI extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -60,8 +62,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 	private static final int SO_DONG_TRANG = 8;
 	private static final int CAO_DONG = 56;
 	private static final int CAO_HEADER_BANG = 40;
-	private static final int COL_KHACH = 2;
-	private static final int COL_THAO_TAC = 5;
+	private static final int COL_THAO_TAC = 6;
 	private static final int PAD_TRAI = 16;
 	private static final int NUT = 32;
 	private static final int KHOANG = 8;
@@ -70,13 +71,14 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 			new EmptyBorder(0, PAD_TRAI, 0, 8));
 
 	private final Runnable quayVeLapPhieu;
-	private final List<DuLieuMauTiepNhan.Phieu> dsKetQua = new ArrayList<>();
+	private final List<PhieuTiepNhan> dsKetQua = new ArrayList<>();
+	private final PhieuTiepNhanDAO phieuTiepNhanDAO = new PhieuTiepNhanDAO();
 	private int trang = 1;
 	private boolean daTraCuu = false;
 
 	// ---- Bộ lọc ----
 	private Input txtMaPhieu, txtBienSo, txtKhachHang, txtTuNgay, txtDenNgay;
-	private JComboBox<String> cboTrangThai;
+	private Input txtMaNV;
 
 	// ---- Kết quả ----
 	private Pill lblKetQua;
@@ -118,15 +120,13 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		txtMaPhieu.setText("");
 		txtBienSo.setText("");
 		txtKhachHang.setText("");
-		txtTuNgay.setText(homNay.minusDays(2).format(FMT_NGAY));
+		txtTuNgay.setText(homNay.format(FMT_NGAY));
 		txtDenNgay.setText(homNay.format(FMT_NGAY));
-		cboTrangThai.setSelectedIndex(0);
 
 		dsKetQua.clear();
-		daTraCuu = false;
+		daTraCuu = true;
 		trang = 1;
-		lblDieuKien.setText("Chưa tra cứu - nhập điều kiện lọc rồi bấm \"Tra cứu\"");
-		hienThiTrang();
+		traCuu();
 	}
 
 	// =====================================================================
@@ -142,7 +142,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		JLabel lblTitle = new JLabel("Tra cứu phiếu tiếp nhận");
 		lblTitle.setFont(FONT_TITLE);
 		lblTitle.setForeground(TITLE);
-		JLabel lblSub = new JLabel("Tìm kiếm, xem chi tiết và in các phiếu tiếp nhận đã lập.");
+		JLabel lblSub = new JLabel("Tìm kiếm và xem chi tiết các phiếu tiếp nhận đã lập.");
 		lblSub.setFont(FONT_LABEL);
 		lblSub.setForeground(TEXT_MUTED);
 		tieuDe.add(lblTitle);
@@ -188,7 +188,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		txtTuNgay.themIconBenPhai(IMG_LICH, null);
 		txtDenNgay = new Input("dd/MM/yyyy", false);
 		txtDenNgay.themIconBenPhai(IMG_LICH, null);
-		cboTrangThai = createComboBox(themDau("Tất cả trạng thái", DuLieuMauTiepNhan.TRANG_THAI));
+		txtMaNV = new Input("Nhập mã nhân viên", false);
 
 		ActionButton btnTraCuu = new ActionButton("Tra cứu", ActionButton.KIEU_CHINH, IMG_TIM_KIEM);
 		ActionButton btnDatLai = new ActionButton("Đặt lại", ActionButton.KIEU_VIEN_XANH, IMG_DAT_LAI);
@@ -197,6 +197,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		txtMaPhieu.addActionListener(e -> traCuu());
 		txtBienSo.addActionListener(e -> traCuu());
 		txtKhachHang.addActionListener(e -> traCuu());
+		txtMaNV.addActionListener(e -> traCuu());
 		txtTuNgay.addActionListener(e -> traCuu());
 		txtDenNgay.addActionListener(e -> traCuu());
 
@@ -211,7 +212,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		hang2.setOpaque(false);
 		themCot(hang2, labeled("Ngày tiếp nhận từ", txtTuNgay), 0, 0, 1.1, 16);
 		themCot(hang2, labeled("Đến ngày", txtDenNgay), 1, 0, 1.1, 16);
-		themCot(hang2, labeled("Trạng thái phiếu", cboTrangThai), 2, 0, 1.0, 16);
+		themCot(hang2, labeled("Mã nhân viên lập phiếu", txtMaNV), 2, 0, 1.0, 16);
 		themCot(hang2, labeledFixed(" ", btnTraCuu), 3, 0, 0, 12);
 		themCot(hang2, labeledFixed(" ", btnDatLai), 4, 0, 0, 0);
 
@@ -288,8 +289,8 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		the.add(dau, BorderLayout.NORTH);
 
 		// --- Bảng (KHÔNG có cột Trạng thái) ---
-		model = new DefaultTableModel(new String[] { "Mã phiếu", "Ngày tiếp nhận", "Khách hàng", "Biển số xe",
-				"Yêu cầu tiếp nhận", "Xem / In" }, 0) {
+		model = new DefaultTableModel(new String[] { "Mã phiếu", "Ngày tiếp nhận", "Biển số xe",
+				"Họ tên khách hàng", "SĐT khách hàng", "Nhân viên lập phiếu", "Thao tác" }, 0) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -348,15 +349,16 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		th.setPreferredSize(new Dimension(100, CAO_HEADER_BANG));
 		th.setDefaultRenderer(new HeaderRenderer());
 
-		int[] rong = { 150, 120, 190, 120, 280, 110 };
+		int[] rong = { 130, 120, 120, 190, 130, 180, 90 };
 		for (int i = 0; i < rong.length; i++) {
 			tblPhieu.getColumnModel().getColumn(i).setPreferredWidth(rong[i]);
 		}
 		tblPhieu.getColumnModel().getColumn(0).setCellRenderer(new CellRenderer(true));
 		tblPhieu.getColumnModel().getColumn(1).setCellRenderer(new CellRenderer(false));
-		tblPhieu.getColumnModel().getColumn(COL_KHACH).setCellRenderer(new KhachHangRenderer());
+		tblPhieu.getColumnModel().getColumn(2).setCellRenderer(new CellRenderer(false));
 		tblPhieu.getColumnModel().getColumn(3).setCellRenderer(new CellRenderer(false));
 		tblPhieu.getColumnModel().getColumn(4).setCellRenderer(new CellRenderer(false));
+		tblPhieu.getColumnModel().getColumn(5).setCellRenderer(new CellRenderer(false));
 		tblPhieu.getColumnModel().getColumn(COL_THAO_TAC).setCellRenderer(new ThaoTacRenderer());
 
 		tblPhieu.addMouseListener(new MouseAdapter() {
@@ -366,12 +368,10 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 				if (row < 0) {
 					return;
 				}
-				DuLieuMauTiepNhan.Phieu p = (DuLieuMauTiepNhan.Phieu) model.getValueAt(row, COL_KHACH);
+				PhieuTiepNhan p = (PhieuTiepNhan) model.getValueAt(row, 0);
 				int v = vungThaoTac(e);
 				if (v == 1) {
 					xem(p);
-				} else if (v == 2) {
-					in(p);
 				}
 			}
 		});
@@ -384,7 +384,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		});
 	}
 
-	/** Vị trí click trong ô "Xem / In": 0 = ngoài, 1 = nút Xem, 2 = nút In. */
+	/** Vị trí click trong ô "Thao tác": 0 = ngoài, 1 = nút Xem. */
 	private int vungThaoTac(MouseEvent e) {
 		int row = tblPhieu.rowAtPoint(e.getPoint());
 		int col = tblPhieu.columnAtPoint(e.getPoint());
@@ -399,9 +399,6 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		}
 		if (x >= 0 && x <= NUT) {
 			return 1;
-		}
-		if (x >= NUT + KHOANG && x <= 2 * NUT + KHOANG) {
-			return 2;
 		}
 		return 0;
 	}
@@ -484,49 +481,20 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 			return;
 		}
 
-		String ma = txtMaPhieu.getText().trim().toUpperCase();
-		String bienSo = DuLieuMauTiepNhan.chuanHoaBienSo(txtBienSo.getText());
-		String khachChu = DuLieuMauTiepNhan.boDau(txtKhachHang.getText().trim());
-		String khachSo = DuLieuMauTiepNhan.chiSo(txtKhachHang.getText());
-		boolean locTrangThai = cboTrangThai.getSelectedIndex() > 0;
-		String trangThai = (String) cboTrangThai.getSelectedItem();
-
-		// TODO: thay vòng lặp này bằng phieuTiepNhanDAO.timKiem(...) với cùng các điều kiện lọc
-		dsKetQua.clear();
-		for (DuLieuMauTiepNhan.Phieu p : DuLieuMauTiepNhan.PHIEU) {
-			if (!ma.isEmpty() && !p.ma.toUpperCase().contains(ma)) {
-				continue;
-			}
-			if (!bienSo.isEmpty() && !DuLieuMauTiepNhan.chuanHoaBienSo(p.bienSo).contains(bienSo)) {
-				continue;
-			}
-			if (!khachChu.isEmpty()) {
-				boolean khop = DuLieuMauTiepNhan.boDau(p.tenKhach).contains(khachChu)
-						|| (!khachSo.isEmpty() && p.sdt.contains(khachSo));
-				if (!khop) {
-					continue;
-				}
-			}
-			if (tu != null && p.ngay.isBefore(tu)) {
-				continue;
-			}
-			if (den != null && p.ngay.isAfter(den)) {
-				continue;
-			}
-			if (locTrangThai && !p.trangThai.equals(trangThai)) {
-				continue;
-			}
-			dsKetQua.add(p);
+		try {
+			dsKetQua.clear();
+			dsKetQua.addAll(phieuTiepNhanDAO.timKiem(txtMaPhieu.getText().trim(), txtBienSo.getText().trim(),
+					txtKhachHang.getText().trim(), tu, den, txtMaNV.getText().trim()));
+		} catch (SQLException e) {
+			baoLoi("Không thể tra cứu phiếu tiếp nhận: " + e.getMessage(), txtMaPhieu);
+			return;
 		}
-		Comparator<DuLieuMauTiepNhan.Phieu> moiNhatTruoc = Comparator
-				.comparing((DuLieuMauTiepNhan.Phieu p) -> p.ngay).thenComparing((DuLieuMauTiepNhan.Phieu p) -> p.gio);
-		dsKetQua.sort(moiNhatTruoc.reversed());
 
 		daTraCuu = true;
 		trang = 1;
 		lblDieuKien.setText("Ngày tiếp nhận: " + (tu == null ? "Không giới hạn" : tu.format(FMT_NGAY)) + " – "
-				+ (den == null ? "Không giới hạn" : den.format(FMT_NGAY)) + " • "
-				+ (locTrangThai ? trangThai : "Tất cả trạng thái"));
+				+ (den == null ? "Không giới hạn" : den.format(FMT_NGAY)) + " • Mã nhân viên: "
+				+ (txtMaNV.getText().trim().isEmpty() ? "Tất cả" : txtMaNV.getText().trim()));
 		hienThiTrang();
 	}
 
@@ -543,12 +511,14 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 
 		model.setRowCount(0);
 		for (int i = tu; i < den; i++) {
-			DuLieuMauTiepNhan.Phieu p = dsKetQua.get(i);
-			model.addRow(new Object[] { p.ma, p.ngay.format(FMT_NGAY), p, p.bienSo, p.yeuCau, p });
+			PhieuTiepNhan p = dsKetQua.get(i);
+			model.addRow(new Object[] { p, p.getNgayTiepNhan().format(FMT_NGAY),
+					p.getXe().getBienSoXe(), p.getKhachHang().getHoTenKH(), p.getKhachHang().getSdt(),
+					p.getNhanVienLapPhieu().getHoTenNV(), p });
 		}
 
 		lblKetQua.setText(tong + " kết quả");
-		lblHienThi.setText("Hiển thị " + (den - tu) + " trên tổng số " + DuLieuMauTiepNhan.PHIEU.size() + " phiếu");
+		lblHienThi.setText("Hiển thị " + (den - tu) + " trên tổng số " + tong + " phiếu");
 		lblSoTrang.setText(String.valueOf(trang));
 		btnTruoc.setEnabled(trang > 1);
 		btnSau.setEnabled(trang < tongSoTrang());
@@ -559,30 +529,20 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		theDanhSach.repaint();
 	}
 
-	private void xem(DuLieuMauTiepNhan.Phieu p) {
+	private void xem(PhieuTiepNhan p) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Mã phiếu: ").append(p.ma);
-		sb.append("\nNgày giờ tiếp nhận: ").append(p.ngay.format(FMT_NGAY)).append(" ").append(p.gio);
-		sb.append("\nKhách hàng: ").append(p.tenKhach).append(" - ").append(p.sdt);
-		sb.append("\nĐịa chỉ: ").append(p.diaChi);
-		sb.append("\nXe: ").append(p.bienSo).append(" - ").append(p.hangXe).append(" (").append(p.soKm)
-				.append(" km)");
-		sb.append("\nYêu cầu: ").append(p.yeuCau == null || p.yeuCau.isEmpty() ? "(không có)" : p.yeuCau);
-		sb.append("\nNgười tiếp nhận: ").append(p.nguoiTiepNhan);
-		sb.append("\nTrạng thái: ").append(p.trangThai);
-		sb.append("\nHạng mục có lỗi:");
-		if (p.tinhTrang.isEmpty()) {
-			sb.append(" (không ghi nhận lỗi)");
-		} else {
-			p.tinhTrang.forEach((k, v) -> sb.append("\n  - ").append(k).append(": ").append(v));
-		}
+		sb.append("Mã phiếu: ").append(p.getMaPTN());
+		sb.append("\nNgày giờ tiếp nhận: ").append(p.getNgayTiepNhan().format(FMT_NGAY));
+		sb.append("\nKhách hàng: ").append(p.getKhachHang().getHoTenKH()).append(" - ")
+				.append(p.getKhachHang().getSdt());
+		sb.append("\nĐịa chỉ: ").append(p.getKhachHang().getDiaChi());
+		sb.append("\nXe: ").append(p.getXe().getBienSoXe()).append(" - ").append(p.getXe().getHangXe())
+				.append(" (").append(p.getSoKmDaDi()).append(" km)");
+		sb.append("\nYêu cầu: ").append(p.getYeuCauKhachHang() == null || p.getYeuCauKhachHang().isEmpty()
+				? "(không có)" : p.getYeuCauKhachHang());
+		sb.append("\nNhân viên lập phiếu: ").append(p.getNhanVienLapPhieu().getHoTenNV())
+				.append(" (").append(p.getNhanVienLapPhieu().getMaNV()).append(")");
 		JOptionPane.showMessageDialog(this, sb.toString(), "Chi tiết phiếu tiếp nhận", JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	private void in(DuLieuMauTiepNhan.Phieu p) {
-		// TODO: xuất / in phiếu tiếp nhận (PDF hoặc PrinterJob)
-		JOptionPane.showMessageDialog(this, "Chức năng in phiếu " + p.ma + " đang được xây dựng.", "Thông báo",
-				JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private static LocalDate parseNgay(String s) {
@@ -652,7 +612,8 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
-			super.getTableCellRendererComponent(t, v, false, false, r, c);
+			Object giaTri = v instanceof PhieuTiepNhan ? ((PhieuTiepNhan) v).getMaPTN() : v;
+			super.getTableCellRendererComponent(t, giaTri, false, false, r, c);
 			setOpaque(true);
 			setBackground(mauNen(sel, r));
 			setForeground(nhanManh ? PRIMARY : TEXT_DARK);
@@ -662,48 +623,11 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 		}
 	}
 
-	/** Ô "Khách hàng": tên ở trên, số điện thoại (chữ nhỏ, xám) ở dưới. */
-	private static class KhachHangRenderer implements TableCellRenderer {
-		private final JPanel panel = new JPanel();
-		private final JLabel lblTen = new JLabel();
-		private final JLabel lblSdt = new JLabel();
-
-		KhachHangRenderer() {
-			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-			panel.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(236, 240, 245)),
-					new EmptyBorder(8, PAD_TRAI, 8, 8)));
-			lblTen.setFont(FONT_BODY);
-			lblTen.setForeground(TEXT_DARK);
-			lblSdt.setFont(FONT_SMALL);
-			lblSdt.setForeground(TEXT_MUTED);
-			panel.add(javax.swing.Box.createVerticalGlue());
-			panel.add(lblTen);
-			panel.add(lblSdt);
-			panel.add(javax.swing.Box.createVerticalGlue());
-		}
-
-		@Override
-		public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
-			DuLieuMauTiepNhan.Phieu p = (DuLieuMauTiepNhan.Phieu) v;
-			panel.setBackground(mauNen(sel, r));
-			lblTen.setText(p.tenKhach);
-			lblSdt.setText(dinhDangSdt(p.sdt));
-			return panel;
-		}
-
-		/** "0912567890" -> "0912 567 890". */
-		private static String dinhDangSdt(String s) {
-			return s != null && s.length() == 10 ? s.substring(0, 4) + " " + s.substring(4, 7) + " " + s.substring(7)
-					: s;
-		}
-	}
-
-	/** Ô "Xem / In": hai nút vuông bo góc có icon (VÙNG CHÈN ẢNH: IMG_XEM, IMG_IN trong UITheme). */
+	/** Ô "Thao tác": nút Xem. */
 	private static class ThaoTacRenderer extends JPanel implements TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 		private static final Color DASH = new Color(150, 155, 165);
 		private final SlotIcon iconXem = new SlotIcon(IMG_XEM, 16, 16, DASH);
-		private final SlotIcon iconIn = new SlotIcon(IMG_IN, 16, 16, DASH);
 
 		ThaoTacRenderer() {
 			setOpaque(true);
@@ -722,17 +646,10 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			int y = (getHeight() - NUT) / 2;
 			int x1 = PAD_TRAI;
-			int x2 = x1 + NUT + KHOANG;
 
 			g2.setColor(PRIMARY_LIGHT);
 			g2.fillRoundRect(x1, y, NUT, NUT, 10, 10);
-			g2.setColor(Color.WHITE);
-			g2.fillRoundRect(x2, y, NUT, NUT, 10, 10);
-			g2.setColor(TEXT_DARK);
-			g2.drawRoundRect(x2, y, NUT - 1, NUT - 1, 10, 10);
-
 			iconXem.paintIcon(this, g2, x1 + (NUT - 16) / 2, y + (NUT - 16) / 2);
-			iconIn.paintIcon(this, g2, x2 + (NUT - 16) / 2, y + (NUT - 16) / 2);
 
 			g2.setColor(new Color(236, 240, 245));
 			g2.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
