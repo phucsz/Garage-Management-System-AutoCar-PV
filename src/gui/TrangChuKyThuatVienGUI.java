@@ -110,6 +110,10 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
                 KEY_YEU_CAU_XUAT_KHO,
                 new YeuCauXuatKhoGUI()
         );
+        themCard(
+                KEY_BAO_CAO,
+                new BaoCaoThongKeGUI()
+        );
         
         hoanTat();
 
