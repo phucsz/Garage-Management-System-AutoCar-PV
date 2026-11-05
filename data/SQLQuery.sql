@@ -28,9 +28,8 @@ CREATE TABLE TaiKhoan (
     FOREIGN KEY (maVaiTro) REFERENCES VaiTro(maVaiTro),
     FOREIGN KEY (tenDangNhap) REFERENCES NhanVien(maNV)
 );
-
 insert into VaiTro values 
-('QUANLY',N'Quản lý cửa hàng',N'Là người có quyền hạn cao nhất trong hệ thống'),
+('QUANLY',N'Quản lý',N'Là người có quyền hạn cao nhất trong hệ thống'),
 ('TIEPNHANVIEN',N'Tiếp nhận viên',N'Làm việc trực tiếp với khách hàng'),
 ('KYTHUATVIEN',N'Kỹ thuật viên',N'Thực hiện công việc kỹ thuật'),
 ('THUNGAN',N'Thu ngân',N'Phụ trách thanh toán hóa đơn')
@@ -49,5 +48,13 @@ select * from TaiKhoan
 select tenDangNhap, convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) as matKhau,maVaiTro from TaiKhoan
 where tenDangNhap = 'NV2024001' and convert(VARCHAR(100),DECRYPTBYPASSPHRASE('123',matKhau)) = '15092006'
 
+<<<<<<< HEAD
 Select * from TaiKhoan where tenDangNhap = 'NV2024001'
 --*/
+=======
+Select * from TaiKhoan where tenDangNhap = 'NV15092006001'
+
+update VaiTro 
+set tenVaiTro = N'Quản lý'
+where maVaiTro = 'QUANLY'
+>>>>>>> 9ccb4cad427ef1b38e937ae046fc567d1c702973

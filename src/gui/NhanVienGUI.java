@@ -35,6 +35,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
@@ -62,14 +63,21 @@ public class NhanVienGUI extends JPanel {
 			.withResolverStyle(ResolverStyle.STRICT);
 
 	private static final String[] VAI_TRO = { "Quản lý", "Tiếp nhận viên", "Kỹ thuật viên", "Thu ngân" };
-	private static final String[] TRANG_THAI = { "Đang làm việc", "Tạm ngưng" };
+	private static final String[] TRANG_THAI = { "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc" };
 	private static final String[] GIOI_TINH = { "Nam", "Nữ", "Khác" };
-	private static final String TXT_THAO_TAC = "[i] Xem · [i] Sửa · [i] Xóa";
+	private static final String TXT_THAO_TAC = "[i] Xem · [i] Sửa · [i] Đổi mật khẩu";
 	private static final String TXT_THAO_TAC_XEM = "[i] Xem";
 	private static final String TXT_THAO_TAC_SUA = "[i] Sửa";
-	private static final String TXT_THAO_TAC_XOA = "[i] Xóa";
+	private static final String TXT_THAO_MAT_KHAU = "[i] Đổi mật khẩu";
 	private static final int COL_THAO_TAC = 5;
 	private static final int PAD_TRAI = 16;
+	private static final Map<String, String> MA_VAI_TRO = new HashMap<>();
+	static {
+		MA_VAI_TRO.put("Quản lý", "QUANLY");
+		MA_VAI_TRO.put("Tiếp nhận viên", "TIEPNHANVIEN");
+		MA_VAI_TRO.put("Kỹ thuật viên", "KYTHUATVIEN");
+		MA_VAI_TRO.put("Thu ngân", "THUNGAN");
+	}
 
 	private static final Border O_BANG = new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(236, 240, 245)),
 			new EmptyBorder(0, PAD_TRAI, 0, 8));
@@ -258,7 +266,14 @@ public class NhanVienGUI extends JPanel {
 		txtTimKiem.addActionListener(e -> locDuLieu());
 		cboLocVaiTro.addActionListener(e -> locDuLieu());
 		cboLocTrangThai.addActionListener(e -> locDuLieu());
-		btnThem.addActionListener(e -> moPopupNhanVien(null));
+		btnThem.addActionListener(e -> {
+			try {
+				moPopupNhanVien(null);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
 
 		JPanel hang = new JPanel(new GridBagLayout());
 		hang.setOpaque(false);
@@ -367,10 +382,15 @@ public class NhanVienGUI extends JPanel {
 					xem(nv);
 					break;
 				case 2:
-					moPopupNhanVien(nv);
+					try {
+						moPopupNhanVien(nv);
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					break;
 				case 3:
-					xoa(nv);
+					doiMatKhau(nv);
 					break;
 				default:
 					break;
@@ -396,7 +416,7 @@ public class NhanVienGUI extends JPanel {
 		FontMetrics fm = tblNhanVien.getFontMetrics(FONT_BOLD);
 		int wXem = fm.stringWidth(TXT_THAO_TAC_XEM);
 		int wSua = fm.stringWidth(TXT_THAO_TAC_SUA);
-		int wXoa = fm.stringWidth(TXT_THAO_TAC_XOA);
+		int wDoiMatKhau = fm.stringWidth(TXT_THAO_MAT_KHAU);
 		int wSep = fm.stringWidth(" · ");
 
 		if (x >= 0 && x <= wXem) {
@@ -407,7 +427,7 @@ public class NhanVienGUI extends JPanel {
 			return 2;
 		}
 		s += wSua + wSep;
-		if (x >= s && x <= s + wXoa) {
+		if (x >= s && x <= s + wDoiMatKhau) {
 			return 3;
 		}
 		return 0;
@@ -446,7 +466,7 @@ public class NhanVienGUI extends JPanel {
 		return l;
 	}
 
-	private void moPopupNhanVien(NhanVien nv) {
+	private void moPopupNhanVien(NhanVien nv) throws SQLException {
 		boolean dangThem = nv == null;
 		NhanVienPopupForm form = taoFormNhanVienPopup();
 		if (dangThem) {
@@ -468,19 +488,27 @@ public class NhanVienGUI extends JPanel {
 			if (!kiemTraFormPopup(form, nv)) {
 				continue;
 			}
-
-			NhanVien save = nv;
-			if (dangThem) {
-				save = new NhanVien();
-				dsNhanVien.add(save);
+			
+			NhanVien save = taoEntityFromForm(form);
+			String maVaiTro = MA_VAI_TRO.get(form.cboVaiTro.getSelectedItem());
+			try {
+				boolean thanhCong = dangThem ? nvBus.themNhanVien(save, maVaiTro)
+						: nvBus.capNhatNhanVien(save, maVaiTro);
+				if (!thanhCong) {
+					baoLoi("Không thể lưu thông tin nhân viên.", form.txtHoTenNV);
+					continue;
+				}
+				napDuLieuTuCSDL();
+				dangChon = timNhanVienTheoMa(save.getMaNV());
+				locDuLieu();
+				chonDong(dangChon);
+				JOptionPane.showMessageDialog(this, "Đã lưu thông tin nhân viên " + save.getMaNV() + ".", "Thông báo",
+						JOptionPane.INFORMATION_MESSAGE);
+				return;
+			} catch (SQLException ex) {
+				JOptionPane.showMessageDialog(this, "Không thể lưu nhân viên và tài khoản: " + ex.getMessage(),
+						"Lỗi CSDL", JOptionPane.ERROR_MESSAGE);
 			}
-			doEntityFromForm(save, form);
-			dangChon = save;
-			locDuLieu();
-			chonDong(save);
-			JOptionPane.showMessageDialog(this, "Đã lưu thông tin nhân viên " + save.getMaNV() + ".", "Thông báo",
-					JOptionPane.INFORMATION_MESSAGE);
-			return;
 		}
 	}
 
@@ -502,15 +530,15 @@ public class NhanVienGUI extends JPanel {
 		panel.setPreferredSize(new Dimension(760, 380));
 		themO(panel, labeled("Mã nhân viên", txtMaNV), 0, 0);
 		themO(panel, labeled("Họ tên nhân viên *", txtHoTenNV), 0, 1);
-		themO(panel, labeled("Nơi sinh *", txtNoiSinh), 0, 2);
+		themO(panel, labeled("Nơi sinh", txtNoiSinh), 0, 2);
 		themO(panel, labeled("Ngày sinh *", txtNgaySinh), 1, 0);
-		themO(panel, labeled("Giới tính *", cboGioiTinh), 1, 1);
+		themO(panel, labeled("Giới tính", cboGioiTinh), 1, 1);
 		themO(panel, labeled("CCCD *", txtCCCD), 1, 2);
 		themO(panel, labeled("Số điện thoại *", txtSdt), 2, 0);
-		themO(panel, labeled("Địa chỉ *", txtDiaChi), 2, 1);
+		themO(panel, labeled("Địa chỉ", txtDiaChi), 2, 1);
 		themO(panel, labeled("Email", txtEmail), 2, 2);
 		themO(panel, labeled("Trạng thái *", cboTrangThai), 3, 0);
-		themO(panel, labeled("Vai trò (join từ tài khoản) *", cboVaiTro), 3, 1);
+		themO(panel, labeled("Vai trò", cboVaiTro), 3, 1);
 
 		return new NhanVienPopupForm(panel, txtMaNV, txtHoTenNV, txtNoiSinh, txtNgaySinh, cboGioiTinh, txtCCCD,
 				txtSdt, txtDiaChi, txtEmail, cboTrangThai, cboVaiTro);
@@ -542,22 +570,12 @@ public class NhanVienGUI extends JPanel {
 		form.cboVaiTro.setSelectedItem("-".equals(vaiTro) ? VAI_TRO[0] : vaiTro);
 	}
 
-	private void doEntityFromForm(NhanVien nv, NhanVienPopupForm form) {
-		String maCu = nv.getMaNV();
-		nv.setMaNV(form.txtMaNV.getText().trim());
-		nv.setHoTenNV(form.txtHoTenNV.getText().trim());
-		nv.setNoiSinh(form.txtNoiSinh.getText().trim());
-		nv.setNgaySinh(parseNgay(form.txtNgaySinh.getText().trim()));
-		nv.setGioiTinh((String) form.cboGioiTinh.getSelectedItem());
-		nv.setCccd(form.txtCCCD.getText().trim());
-		nv.setSdt(form.txtSdt.getText().trim());
-		nv.setDiaChi(form.txtDiaChi.getText().trim());
-		nv.setEmail(form.txtEmail.getText().trim());
-		nv.setTrangThai((String) form.cboTrangThai.getSelectedItem());
-		if (maCu != null && !maCu.equals(nv.getMaNV())) {
-			vaiTroTheoMaNV.remove(maCu);
-		}
-		vaiTroTheoMaNV.put(nv.getMaNV(), (String) form.cboVaiTro.getSelectedItem());
+	private NhanVien taoEntityFromForm(NhanVienPopupForm form) {
+		return new NhanVien(form.txtMaNV.getText().trim(), form.txtHoTenNV.getText().trim(),
+				form.txtNoiSinh.getText().trim(), parseNgay(form.txtNgaySinh.getText().trim()),
+				(String) form.cboGioiTinh.getSelectedItem(), form.txtCCCD.getText().trim(),
+				form.txtSdt.getText().trim(), form.txtDiaChi.getText().trim(), form.txtEmail.getText().trim(),
+				(String) form.cboTrangThai.getSelectedItem());
 	}
 
 	private boolean kiemTraFormPopup(NhanVienPopupForm form, NhanVien nvDangSua) {
@@ -569,10 +587,7 @@ public class NhanVienGUI extends JPanel {
 			baoLoi("Vui lòng nhập họ tên nhân viên.", form.txtHoTenNV);
 			return false;
 		}
-		if (form.txtNoiSinh.getText().trim().isEmpty()) {
-			baoLoi("Vui lòng nhập nơi sinh.", form.txtNoiSinh);
-			return false;
-		}
+		
 		LocalDate ngaySinh = parseNgay(form.txtNgaySinh.getText().trim());
 		if (ngaySinh == null) {
 			baoLoi("Ngày sinh không hợp lệ (định dạng dd/MM/yyyy).", form.txtNgaySinh);
@@ -594,6 +609,14 @@ public class NhanVienGUI extends JPanel {
 			baoLoi("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.", form.txtSdt);
 			return false;
 		}
+		
+		String email = form.txtEmail.getText().trim();
+		if (!email.isEmpty())
+		if (!email.matches("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$")) {
+			baoLoi("Email không hợp lệ.", form.txtEmail);
+			return false;
+		}
+		
 		for (NhanVien nv : dsNhanVien) {
 			if (nv != nvDangSua && sdt.equals(nv.getSdt())) {
 				baoLoi("Số điện thoại đã tồn tại (" + nv.getMaNV() + " - " + nv.getHoTenNV() + ").", form.txtSdt);
@@ -601,16 +624,6 @@ public class NhanVienGUI extends JPanel {
 			}
 		}
 
-		if (form.txtDiaChi.getText().trim().isEmpty()) {
-			baoLoi("Vui lòng nhập địa chỉ.", form.txtDiaChi);
-			return false;
-		}
-
-		String email = form.txtEmail.getText().trim();
-		if (!email.isEmpty() && !email.matches("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$")) {
-			baoLoi("Email không hợp lệ.", form.txtEmail);
-			return false;
-		}
 		return true;
 	}
 
@@ -667,6 +680,10 @@ public class NhanVienGUI extends JPanel {
 	}
 
 	private void chonDong(NhanVien nv) {
+		if (nv == null) {
+			tblNhanVien.clearSelection();
+			return;
+		}
 		int i = dsHienThi.indexOf(nv);
 		dangDongBo = true;
 		if (i >= 0) {
@@ -687,19 +704,22 @@ public class NhanVienGUI extends JPanel {
 	}
 
 	private String taoMaMoi() {
-		int max = 0;
-		for (NhanVien nv : dsNhanVien) {
-			String ma = nv.getMaNV();
-			if (ma == null || !ma.startsWith("NV-")) {
-				continue;
-			}
-			try {
-				max = Math.max(max, Integer.parseInt(ma.substring(3)));
-			} catch (RuntimeException ex) {
-				// Bỏ qua mã không đúng định dạng NV-xxx.
+		try {
+			return nvBus.taoMaNVMoi();
+		} catch (SQLException ex) {
+			JOptionPane.showMessageDialog(this, "Không thể tạo mã nhân viên mới: " + ex.getMessage(), "Lỗi CSDL",
+					JOptionPane.ERROR_MESSAGE);
+			return "";
+		}
+	}
+
+	private NhanVien timNhanVienTheoMa(String maNV) {
+		for (NhanVien nhanVien : dsNhanVien) {
+			if (maNV.equals(nhanVien.getMaNV())) {
+				return nhanVien;
 			}
 		}
-		return String.format("NV-%03d", max + 1);
+		return null;
 	}
 
 	private String layVaiTroHienThi(NhanVien nv) {
@@ -725,20 +745,43 @@ public class NhanVienGUI extends JPanel {
 		return s == null || s.trim().isEmpty() ? "(trống)" : s;
 	}
 
-	private void xoa(NhanVien nv) {
-		int c = JOptionPane.showConfirmDialog(this,
-				"Bạn có chắc muốn xóa nhân viên " + nv.getHoTenNV() + " (" + nv.getMaNV() + ")?", "Xác nhận xóa",
-				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		if (c != JOptionPane.YES_OPTION) {
+	private void doiMatKhau(NhanVien nv) {
+		JPasswordField txtMatKhauMoi = new JPasswordField();
+		JPasswordField txtXacNhan = new JPasswordField();
+		JPanel panel = new JPanel(new GridBagLayout());
+		panel.setPreferredSize(new Dimension(360, 110));
+		themO(panel, labeled("Mật khẩu mới", txtMatKhauMoi), 0, 0);
+		themO(panel, labeled("Xác nhận mật khẩu", txtXacNhan), 1, 0);
+
+		int luaChon = JOptionPane.showConfirmDialog(this, panel,
+				"Cập nhật mật khẩu - " + nv.getMaNV(), JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE);
+		if (luaChon != JOptionPane.OK_OPTION) {
 			return;
 		}
-		// TODO: xóa (hoặc chuyển trạng thái) nhân viên trong CSDL.
-		dsNhanVien.remove(nv);
-		vaiTroTheoMaNV.remove(nv.getMaNV());
-		if (dangChon == nv) {
-			dangChon = null;
+
+		String matKhauMoi = new String(txtMatKhauMoi.getPassword());
+		String xacNhan = new String(txtXacNhan.getPassword());
+		if (matKhauMoi.trim().isEmpty()) {
+			baoLoi("Mật khẩu mới không được để trống.", txtMatKhauMoi);
+			return;
 		}
-		locDuLieu();
+		if (!matKhauMoi.equals(xacNhan)) {
+			baoLoi("Mật khẩu xác nhận không khớp.", txtXacNhan);
+			return;
+		}
+		try {
+			if (!nvBus.capNhatMatKhau(nv.getMaNV(), matKhauMoi)) {
+				JOptionPane.showMessageDialog(this, "Không tìm thấy tài khoản của nhân viên.", "Thông báo",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			JOptionPane.showMessageDialog(this, "Đã cập nhật mật khẩu mới cho nhân viên " + nv.getHoTenNV()+ ".",
+					"Thông báo", JOptionPane.INFORMATION_MESSAGE);
+		} catch (SQLException ex) {
+			JOptionPane.showMessageDialog(this, "Không thể cập nhật mật khẩu: " + ex.getMessage(), "Lỗi CSDL",
+					JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	private void baoLoi(String msg, Component focus) {

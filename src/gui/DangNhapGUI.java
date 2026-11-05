@@ -5,9 +5,6 @@ import javax.swing.border.AbstractBorder;
 
 import business.DangNhapBUS;
 import connectDB.ConnectDB;
-import dao.NhanVienDAO;
-import dao.TaiKhoanDAO;
-import entity.NhanVien;
 import entity.TaiKhoan;
 
 import java.awt.*;
@@ -276,7 +273,8 @@ public class DangNhapGUI extends JFrame {
                     "Thông báo", JOptionPane.WARNING_MESSAGE);
         	this.dispose();	
         	String hoTen = dangNhap_bus.getNVtheoMa(tenDN).getHoTenNV();
-            new TrangChuGUI(hoTen, tk.getVaiTro()).setVisible(true);
+            TrangChuBaseGUI.taoTheoVaiTro(tk.getVaiTro().getTenVaiTro(), hoTen).setVisible(true);
+            
         } else JOptionPane.showMessageDialog(this, "Sai tên đăng nhập hoặc mật khẩu!",
                 "Thông báo", JOptionPane.WARNING_MESSAGE);
         txtTenDangNhap.requestFocus();

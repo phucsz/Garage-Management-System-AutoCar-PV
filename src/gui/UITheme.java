@@ -64,7 +64,8 @@ public final class UITheme {
 	public static final String IMG_BAO_CAO = IMG_DIR + "icon_baoCao.png";
 	public static final String IMG_CA_NHAN = IMG_DIR + "icon_caNhan.png";
 	public static final String IMG_DANG_XUAT = IMG_DIR + "icon_dangXuat.png";
-
+	public static final String IMG_KHUYEN_MAI = IMG_DIR + "icon_khuyenMai.png";
+	
 	public static final String IMG_TIM_KIEM = IMG_DIR + "icon_timKiem.png"; // 16 x 16
 	public static final String IMG_THEM = IMG_DIR + "icon_them.png";
 	public static final String IMG_QUAY_LAI = IMG_DIR + "icon_quayLai.png";
@@ -195,11 +196,31 @@ public final class UITheme {
 		private final Image anh;
 
 		public SlotIcon(String duongDan, int w, int h, Color mauVien) {
-		    this.w = w;
-		    this.h = h;
-		    this.mauVien = mauVien;
-		    java.net.URL url = UITheme.class.getResource(duongDan);
-		    this.anh = (url != null) ? new ImageIcon(url).getImage() : null;
+			this.w = w;
+			this.h = h;
+			this.mauVien = mauVien;
+			this.anh = napAnh(duongDan);
+		}
+
+		/**
+		 * Nạp ảnh từ classpath. Chấp nhận: "/images/abc.png" (đường dẫn đầy đủ) hoặc "abc.png"
+		 * (tự hiểu là nằm trong IMG_DIR). Chuỗi rỗng / sai đường dẫn / file hỏng -> trả về null
+		 * (sẽ vẽ khung nét đứt).
+		 */
+		private static Image napAnh(String duongDan) {
+			if (duongDan == null || duongDan.trim().isEmpty()) {
+				return null;
+			}
+			String p = duongDan.trim();
+			if (!p.startsWith("/")) {
+				p = IMG_DIR + p;
+			}
+			java.net.URL url = UITheme.class.getResource(p);
+			if (url == null) {
+				return null;
+			}
+			ImageIcon ic = new ImageIcon(url);
+			return ic.getImageLoadStatus() == java.awt.MediaTracker.COMPLETE ? ic.getImage() : null;
 		}
 
 		@Override

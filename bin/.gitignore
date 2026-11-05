@@ -1,7 +1,6 @@
-/gui/
-/data/
-/connectDB/
-/entity/
-/dao/
 /business/
+/connectDB/
+/dao/
+/entity/
+/gui/
 /images/
