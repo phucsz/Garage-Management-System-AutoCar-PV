@@ -96,11 +96,21 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
         tenKyThuatVien = hoTen;
 
         themCard(KEY_TRANG_CHU, taoTrangChu());
+        
         themCard(
                 KEY_DS_CONG_VIEC,
                 new DanhSachCongViecGUI()
         );
-
+        
+        themCard(
+                KEY_CONG_VIEC_PHU_TRACH,
+                new CongViecPhuTrachGUI()
+        );
+        themCard(
+                KEY_YEU_CAU_XUAT_KHO,
+                new YeuCauXuatKhoGUI()
+        );
+        
         hoanTat();
 
         khoiDongDongHo();

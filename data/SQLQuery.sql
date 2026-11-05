@@ -36,9 +36,21 @@ insert into VaiTro values
 
 insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
 ('NV2024001',N'Phạm Phương Hoàng Phúc',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0949101885',N'Đang làm việc')
+insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
+('NV2024002',N'Nguyễn Đăng Vinh',N'TP.Hồ Chí Minh','2006-11-03',N'Nam','0981293545',N'Đang làm việc')
+insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
+('NV2024003',N'Phạm Phương Hoàng Phúc Junior',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0123456789',N'Đang làm việc')
+insert into NhanVien(maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,sdt,trangThai) values 
+('NV2024004',N'Nguyễn Đăng Vinh Junior',N'TP.Hồ Chí Minh','2006-09-15',N'Nam','0987654321',N'Đang làm việc')
 
 insert into TaiKhoan values
 ('NV2024001',ENCRYPTBYPASSPHRASE('123','15092006'),'QUANLY')
+insert into TaiKhoan values
+('NV2024002',ENCRYPTBYPASSPHRASE('123','16092006'),'TIEPNHANVIEN')
+insert into TaiKhoan values
+('NV2024003',ENCRYPTBYPASSPHRASE('123','17092006'),'KYTHUATVIEN')
+insert into TaiKhoan values
+('NV2024004',ENCRYPTBYPASSPHRASE('123','18092006'),'THUNGAN')
 
 CREATE TABLE KhachHang (
     maKH VARCHAR(50) PRIMARY KEY,
