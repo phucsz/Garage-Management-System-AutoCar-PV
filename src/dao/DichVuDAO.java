@@ -22,6 +22,52 @@ public class DichVuDAO {
 		return result;
 	}
 
+	public ArrayList<DichVu> timKiem(String maDichVu, String loaiDichVu) throws SQLException {
+		ArrayList<DichVu> result = new ArrayList<>();
+		StringBuilder sql = new StringBuilder(
+				"SELECT maDichVu, tenDichVu, loaiDichVu, donGiaHienTai FROM DichVu WHERE maDichVu LIKE ?");
+		if (loaiDichVu != null && !loaiDichVu.trim().isEmpty()) {
+			sql.append(" AND loaiDichVu = ?");
+		}
+		sql.append(" ORDER BY tenDichVu");
+
+		try (PreparedStatement stmt = connection().prepareStatement(sql.toString())) {
+			stmt.setString(1, "%" + (maDichVu == null ? "" : maDichVu.trim()) + "%");
+			if (loaiDichVu != null && !loaiDichVu.trim().isEmpty()) {
+				stmt.setString(2, loaiDichVu.trim());
+			}
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					result.add(new DichVu(rs.getString("maDichVu"), rs.getString("tenDichVu"),
+							rs.getString("loaiDichVu"), rs.getDouble("donGiaHienTai")));
+				}
+			}
+		}
+		return result;
+	}
+
+	public ArrayList<String> layDanhSachLoai() throws SQLException {
+		ArrayList<String> result = new ArrayList<>();
+		String sql = "SELECT DISTINCT loaiDichVu FROM DichVu "
+				+ "WHERE loaiDichVu IS NOT NULL AND LTRIM(RTRIM(loaiDichVu)) <> '' ORDER BY loaiDichVu";
+		try (PreparedStatement stmt = connection().prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+			while (rs.next()) {
+				result.add(rs.getString(1));
+			}
+		}
+		return result;
+	}
+
+	public int getSoLuongDV() throws SQLException {
+		int dem = 0;
+		String sql = "SELECT count(maDichVu) FROM DichVu";
+		PreparedStatement stmt = connection().prepareStatement(sql);
+		
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) dem = rs.getInt(1);
+		return dem;
+	}
+
 	public boolean insert(DichVu value) throws SQLException {
 		String sql = "INSERT INTO DichVu(maDichVu, tenDichVu, loaiDichVu, donGiaHienTai) VALUES (?, ?, ?, ?)";
 		try (PreparedStatement stmt = connection().prepareStatement(sql)) {

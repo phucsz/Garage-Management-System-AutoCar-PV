@@ -32,7 +32,7 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 
 	private final NhanVienGUI nhanVienGUI;
 	private final PhuTungGUI phuTungGUI;
-	private final DichVuGUI dichVuGUI;
+	private final QuanLyDichVuGUI dichVuGUI;
 	private final KhuyenMaiGUI khuyenMaiGUI;
 
 	public TrangChuQuanLyGUI(String hoTen) {
@@ -42,8 +42,8 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 		nhanVienGUI = new NhanVienGUI(() -> hienThi(KEY_TRANG_CHU));
 		themCard(KEY_NHAN_VIEN, nhanVienGUI);
 		phuTungGUI = new PhuTungGUI();
-		dichVuGUI = new DichVuGUI();
-		khuyenMaiGUI = new KhuyenMaiGUI();
+		dichVuGUI = new QuanLyDichVuGUI(null);
+		khuyenMaiGUI = new KhuyenMaiGUI(null);
 		themCard(KEY_PHU_TUNG, phuTungGUI);
 		themCard(KEY_DICH_VU, dichVuGUI);
 		themCard(KEY_KHUYEN_MAI, khuyenMaiGUI);

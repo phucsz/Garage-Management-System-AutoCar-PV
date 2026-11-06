@@ -5,12 +5,24 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import connectDB.ConnectDB;
 import entity.ChuongTrinhKhuyenMai;
 
 public class ChuongTrinhKhuyenMaiDAO {
+	
+	private Connection connection() throws SQLException {
+		Connection con = ConnectDB.getConnection();
+		if (con == null || con.isClosed()) {
+			ConnectDB.getInstance().connect();
+			con = ConnectDB.getConnection();
+		}
+		return con;
+	}
+	
 	public ArrayList<ChuongTrinhKhuyenMai> getAll() throws SQLException {
 		ArrayList<ChuongTrinhKhuyenMai> result = new ArrayList<>();
 		String sql = "SELECT maChuongTrinh, tenChuongTrinh, ngayBatDau, ngayKetThuc, loaiKhuyenMai, "
@@ -65,12 +77,14 @@ public class ChuongTrinhKhuyenMaiDAO {
 		stmt.setDouble(6, value.getGiaTriKhuyenMai());
 	}
 
-	private Connection connection() throws SQLException {
-		Connection con = ConnectDB.getConnection();
-		if (con == null || con.isClosed()) {
-			ConnectDB.getInstance().connect();
-			con = ConnectDB.getConnection();
-		}
-		return con;
+	
+	public int getSoLuongKM() throws SQLException {
+		int dem = 0;
+		String sql = "select count(maChuongTrinh) from ChuongTrinhKhuyenMai";
+		PreparedStatement stmt = connection().prepareStatement(sql);
+		
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) dem = rs.getInt(1);
+		return dem;
 	}
 }
