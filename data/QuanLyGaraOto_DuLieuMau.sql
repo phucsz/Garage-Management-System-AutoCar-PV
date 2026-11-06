@@ -594,3 +594,41 @@ SELECT
     maVaiTro
 FROM TaiKhoan
 GO
+
+/*==============================================================
+  BO SUNG 2 PHIEU TIEP NHAN, PHIEU SUA CHUA VA HOA DON CHUA THANH TOAN
+==============================================================*/
+
+-- 1. Thêm Phiếu Tiếp Nhận mới (Ngày 09/10/2026 và 10/10/2026)
+INSERT INTO PhieuTiepNhan
+    (maPTN, ngayTiepNhan, yeuCauKhachHang, soKmDaDi, maNVLapPhieu, bienSoXe, maKH)
+VALUES
+('PTN_09102026001', '2026-10-09T08:00:00', N'Kiểm tra định kỳ và bảo dưỡng phanh.', 36000, 'NV2024002', '51G-52451', 'KH001'),
+('PTN_10102026001', '2026-10-10T09:00:00', N'Xe có tiếng kêu lạ ở động cơ.', 53000, 'NV2024002', '36F-23490', 'KH002');
+GO
+
+-- 2. Thêm Phiếu Sửa Chữa mới (Trạng thái: Đang sửa chữa)
+INSERT INTO PhieuSuaChua
+    (maPSC, ngayLapPhieu, trangThai, maPTN, maNVLapPhieu, maNVPhuTrach,
+     tongTienDichVu, tongTienPhuTung, tongChiPhiDuKien)
+VALUES
+('PSC_09102026001', '2026-10-09T09:30:00', N'Đang sửa chữa', 'PTN_09102026001', 'NV2024002', 'NV2024003', 250000, 180000, 430000),
+('PSC_10102026001', '2026-10-10T10:00:00', N'Đang sửa chữa', 'PTN_10102026001', 'NV2024002', 'NV2024005', 300000, 850000, 1150000);
+GO
+
+-- 3. Thêm Hóa Đơn chưa thanh toán (Trạng thái: Chưa thanh toán, Hình thức thanh toán: NULL)
+INSERT INTO HoaDon
+    (maHoaDon, ngayLap, hinhThucThanhToan, trangThai, maPSC,
+     maNVThuNgan, maKH, maChuongTrinh, tienGiamGia, soTienGiamGia, tongTienThanhToan)
+VALUES
+('HD_09102026001', '2026-10-09T11:00:00', NULL, N'Chưa thanh toán', 'PSC_09102026001', 'NV2024004', 'KH001', NULL, 0, 0, 430000),
+('HD_10102026001', '2026-10-10T11:30:00', NULL, N'Chưa thanh toán', 'PSC_10102026001', 'NV2024004', 'KH002', NULL, 0, 0, 1150000);
+GO
+
+INSERT INTO ChiTietDichVu (maPSC, maDichVu, soLuong, donGia, ghiChu) VALUES
+('PSC_09102026001', 'DV001', 1, 250000, N'Thay dầu động cơ'),
+('PSC_10102026001', 'DV006', 1, 300000, N'Bảo dưỡng hệ thống làm mát');
+
+INSERT INTO ChiTietPhuTung (maPSC, maPhuTung, soLuong, donGia, ghiChu) VALUES
+('PSC_09102026001', 'LK001', 1, 180000, N'Lọc dầu động cơ'),
+('PSC_10102026001', 'PH001', 1, 850000, N'Thay má phanh trước');
