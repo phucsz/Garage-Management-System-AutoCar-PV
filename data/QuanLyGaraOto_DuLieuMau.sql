@@ -1,10 +1,9 @@
 ﻿/*==============================================================
   DATABASE: QuanLyGaraOto
   MUC DICH : Tao CSDL va nap du lieu mau cho tat ca cac bang
-  GHI CHU  :
+  GHI CHU  : 
   - Chay script tren SQL Server.
-  - Neu database da ton tai, script se KHONG xoa du lieu cu.
-  - Neu muon tao lai tu dau, hay backup va xoa database cu truoc.
+  - Da cap nhat lai dinh dang ma PTN, PSC, HD theo dung quy uoc ngay thang.
 ==============================================================*/
 
 IF DB_ID(N'QuanLyGaraOto') IS NULL
@@ -260,8 +259,6 @@ GO
 
 /*==============================================================
   PHAN 2. CHEN DU LIEU MAU
-  Thu tu: bang doc lap -> bang phu thuoc -> bang nghiep vu
-  -> bang chi tiet.
 ==============================================================*/
 
 -- 1. VAI TRO
@@ -286,8 +283,6 @@ VALUES
 GO
 
 -- 3. TAI KHOAN
--- Mat khau duoc ma hoa bang ENCRYPTBYPASSPHRASE.
--- Mat khau giai ma mau lan luot: 15092006, 03112006, 15092006...
 INSERT INTO TaiKhoan (tenDangNhap, matKhau, maVaiTro)
 VALUES
 ('NV2024001', ENCRYPTBYPASSPHRASE('123', '15092006'), 'QUANLY'),
@@ -442,88 +437,87 @@ VALUES
 ('LK002', N'Lọc gió động cơ', 'LK', N'Cái', 220000, 25, '2026-03-10', 'NCC004');
 GO
 
--- 12. PHIEU TIEP NHAN
+-- 12. PHIEU TIEP NHAN (Dinh dang: PTN_DDMMYYYYXXX)
 INSERT INTO PhieuTiepNhan
     (maPTN, ngayTiepNhan, yeuCauKhachHang, soKmDaDi, maNVLapPhieu, bienSoXe, maKH)
 VALUES
-('PTN001', '2026-10-01T08:30:00', N'Xe cần thay dầu và kiểm tra phanh.', 35000, 'NV2024002', '51G-52451', 'KH001'),
-('PTN002', '2026-10-02T09:00:00', N'Xe có tiếng kêu ở hệ thống treo.', 52000, 'NV2024002', '36F-23490', 'KH002'),
-('PTN003', '2026-10-03T10:15:00', N'Kiểm tra tổng quát và hệ thống điện.', 18000, 'NV2024006', '72A-22982', 'KH003'),
-('PTN004', '2026-10-04T13:30:00', N'Xe cần thay gương chiếu hậu.', 42000, 'NV2024006', '51H-12345', 'KH004'),
-('PTN005', '2026-10-05T08:45:00', N'Bảo dưỡng định kỳ và kiểm tra điều hòa.', 27000, 'NV2024002', '51K-67890', 'KH005'),
-('PTN006', '2026-10-06T14:00:00', N'Kiểm tra lốp và hệ thống phanh.', 78000, 'NV2024006', '60A-45678', 'KH006'),
-('PTN007', '2026-10-07T09:20:00', N'Xe cần vệ sinh và kiểm tra ngoại thất.', 15000, 'NV2024002', '51A-99887', 'KH007'),
-('PTN008', '2026-10-08T11:00:00', N'Kiểm tra hệ thống làm mát.', 61000, 'NV2024006', '61C-11223', 'KH008');
+('PTN_01102026001', '2026-10-01T08:30:00', N'Xe cần thay dầu và kiểm tra phanh.', 35000, 'NV2024002', '51G-52451', 'KH001'),
+('PTN_02102026001', '2026-10-02T09:00:00', N'Xe có tiếng kêu ở hệ thống treo.', 52000, 'NV2024002', '36F-23490', 'KH002'),
+('PTN_03102026001', '2026-10-03T10:15:00', N'Kiểm tra tổng quát và hệ thống điện.', 18000, 'NV2024006', '72A-22982', 'KH003'),
+('PTN_04102026001', '2026-10-04T13:30:00', N'Xe cần thay gương chiếu hậu.', 42000, 'NV2024006', '51H-12345', 'KH004'),
+('PTN_05102026001', '2026-10-05T08:45:00', N'Bảo dưỡng định kỳ và kiểm tra điều hòa.', 27000, 'NV2024002', '51K-67890', 'KH005'),
+('PTN_06102026001', '2026-10-06T14:00:00', N'Kiểm tra lốp và hệ thống phanh.', 78000, 'NV2024006', '60A-45678', 'KH006'),
+('PTN_07102026001', '2026-10-07T09:20:00', N'Xe cần vệ sinh và kiểm tra ngoại thất.', 15000, 'NV2024002', '51A-99887', 'KH007'),
+('PTN_08102026001', '2026-10-08T11:00:00', N'Kiểm tra hệ thống làm mát.', 61000, 'NV2024006', '61C-11223', 'KH008');
 GO
 
 -- 13. CHI TIET HANG MUC
 INSERT INTO ChiTietHangMuc (maPTN, maHangMuc, tinhTrang)
 VALUES
-('PTN001', 'NG003', N'Lốp xe còn sử dụng tốt'),
-('PTN001', 'NT011', N'Bàn đạp hoạt động bình thường'),
-('PTN001', 'NG002', N'Đèn hoạt động bình thường'),
-('PTN002', 'NG003', N'Lốp trước mòn nhẹ'),
-('PTN002', 'NG019', N'Vè bánh xe bình thường'),
-('PTN003', 'NT006', N'Bảng điều khiển hoạt động bình thường'),
-('PTN003', 'NG002', N'Đèn trước hoạt động không ổn định'),
-('PTN004', 'NG001', N'Gương chiếu hậu bên phải bị nứt'),
-('PTN004', 'NG013', N'Cửa xe hoạt động bình thường'),
-('PTN005', 'NT008', N'Điều hòa làm mát yếu'),
-('PTN005', 'NT009', N'Cửa gió có bụi'),
-('PTN006', 'NG003', N'Lốp sau mòn'),
-('PTN006', 'NT011', N'Hệ thống phanh cần kiểm tra'),
-('PTN007', 'NG004', N'Lớp sơn có vết bẩn'),
-('PTN007', 'NG005', N'Kính lái bình thường'),
-('PTN008', 'NG002', N'Đèn hoạt động bình thường'),
-('PTN008', 'NT008', N'Cần kiểm tra hệ thống làm mát và điều hòa');
+('PTN_01102026001', 'NG003', N'Lốp xe còn sử dụng tốt'),
+('PTN_01102026001', 'NT011', N'Bàn đạp hoạt động bình thường'),
+('PTN_01102026001', 'NG002', N'Đèn hoạt động bình thường'),
+('PTN_02102026001', 'NG003', N'Lốp trước mòn nhẹ'),
+('PTN_02102026001', 'NG019', N'Vè bánh xe bình thường'),
+('PTN_03102026001', 'NT006', N'Bảng điều khiển hoạt động bình thường'),
+('PTN_03102026001', 'NG002', N'Đèn trước hoạt động không ổn định'),
+('PTN_04102026001', 'NG001', N'Gương chiếu hậu bên phải bị nứt'),
+('PTN_04102026001', 'NG013', N'Cửa xe hoạt động bình thường'),
+('PTN_05102026001', 'NT008', N'Điều hòa làm mát yếu'),
+('PTN_05102026001', 'NT009', N'Cửa gió có bụi'),
+('PTN_06102026001', 'NG003', N'Lốp sau mòn'),
+('PTN_06102026001', 'NT011', N'Hệ thống phanh cần kiểm tra'),
+('PTN_07102026001', 'NG004', N'Lớp sơn có vết bẩn'),
+('PTN_07102026001', 'NG005', N'Kính lái bình thường'),
+('PTN_08102026001', 'NG002', N'Đèn hoạt động bình thường'),
+('PTN_08102026001', 'NT008', N'Cần kiểm tra hệ thống làm mát và điều hòa');
 GO
 
--- 14. PHIEU SUA CHUA
--- Cac tong tien duoi day khop voi tong cac dong chi tiet ben duoi.
+-- 14. PHIEU SUA CHUA (Dinh dang: PSC_DDMMYYYYXXX)
 INSERT INTO PhieuSuaChua
     (maPSC, ngayLapPhieu, trangThai, maPTN, maNVLapPhieu, maNVPhuTrach,
      tongTienDichVu, tongTienPhuTung, tongChiPhiDuKien)
 VALUES
-('PSC001', '2026-10-01T09:00:00', N'Hoàn thành', 'PTN001', 'NV2024002', 'NV2024003', 400000, 300000, 700000),
-('PSC002', '2026-10-02T10:00:00', N'Hoàn thành', 'PTN002', 'NV2024002', 'NV2024005', 350000, 1500000, 1850000),
-('PSC003', '2026-10-03T11:00:00', N'Hoàn thành', 'PTN003', 'NV2024006', 'NV2024003', 180000, 1800000, 1980000),
-('PSC004', '2026-10-04T14:00:00', N'Hoàn thành', 'PTN004', 'NV2024006', 'NV2024005', 200000, 750000, 950000),
-('PSC005', '2026-10-05T09:30:00', N'Hoàn thành', 'PTN005', 'NV2024002', 'NV2024003', 370000, 400000, 770000),
-('PSC006', '2026-10-06T15:00:00', N'Hoàn thành', 'PTN006', 'NV2024006', 'NV2024005', 500000, 1010000, 1510000),
-('PSC007', '2026-10-07T10:00:00', N'Hoàn thành', 'PTN007', 'NV2024002', 'NV2024003', 700000, 0, 700000),
-('PSC008', '2026-10-08T12:00:00', N'Hoàn thành', 'PTN008', 'NV2024006', 'NV2024005', 300000, 2500000, 2800000);
+('PSC_01102026001', '2026-10-01T09:00:00', N'Hoàn thành', 'PTN_01102026001', 'NV2024002', 'NV2024003', 400000, 300000, 700000),
+('PSC_02102026001', '2026-10-02T10:00:00', N'Hoàn thành', 'PTN_02102026001', 'NV2024002', 'NV2024005', 350000, 1500000, 1850000),
+('PSC_03102026001', '2026-10-03T11:00:00', N'Hoàn thành', 'PTN_03102026001', 'NV2024006', 'NV2024003', 180000, 1800000, 1980000),
+('PSC_04102026001', '2026-10-04T14:00:00', N'Hoàn thành', 'PTN_04102026001', 'NV2024006', 'NV2024005', 200000, 750000, 950000),
+('PSC_05102026001', '2026-10-05T09:30:00', N'Hoàn thành', 'PTN_05102026001', 'NV2024002', 'NV2024003', 370000, 400000, 770000),
+('PSC_06102026001', '2026-10-06T15:00:00', N'Hoàn thành', 'PTN_06102026001', 'NV2024006', 'NV2024005', 500000, 1010000, 1510000),
+('PSC_07102026001', '2026-10-07T10:00:00', N'Hoàn thành', 'PTN_07102026001', 'NV2024002', 'NV2024003', 700000, 0, 700000),
+('PSC_08102026001', '2026-10-08T12:00:00', N'Hoàn thành', 'PTN_08102026001', 'NV2024006', 'NV2024005', 300000, 2500000, 2800000);
 GO
 
 -- 15. CHI TIET DICH VU
 INSERT INTO ChiTietDichVu (maPSC, maDichVu, soLuong, donGia, ghiChu)
 VALUES
-('PSC001', 'DV001', 1, 250000, N'Thay dầu động cơ'),
-('PSC001', 'DV002', 1, 150000, N'Kiểm tra hệ thống phanh'),
-('PSC002', 'DV005', 1, 350000, N'Cân chỉnh sau khi kiểm tra gầm'),
-('PSC003', 'DV004', 1, 180000, N'Kiểm tra hệ thống điện'),
-('PSC004', 'DV003', 1, 200000, N'Vệ sinh xe'),
-('PSC005', 'DV001', 1, 250000, N'Thay dầu động cơ'),
-('PSC005', 'DV007', 1, 120000, N'Kiểm tra điều hòa'),
-('PSC006', 'DV002', 1, 150000, N'Kiểm tra hệ thống phanh'),
-('PSC006', 'DV005', 1, 350000, N'Cân chỉnh góc đặt bánh xe'),
-('PSC007', 'DV003', 1, 200000, N'Vệ sinh xe'),
-('PSC007', 'DV008', 1, 500000, N'Đánh bóng thân xe'),
-('PSC008', 'DV006', 1, 300000, N'Bảo dưỡng hệ thống làm mát');
+('PSC_01102026001', 'DV001', 1, 250000, N'Thay dầu động cơ'),
+('PSC_01102026001', 'DV002', 1, 150000, N'Kiểm tra hệ thống phanh'),
+('PSC_02102026001', 'DV005', 1, 350000, N'Cân chỉnh sau khi kiểm tra gầm'),
+('PSC_03102026001', 'DV004', 1, 180000, N'Kiểm tra hệ thống điện'),
+('PSC_04102026001', 'DV003', 1, 200000, N'Vệ sinh xe'),
+('PSC_05102026001', 'DV001', 1, 250000, N'Thay dầu động cơ'),
+('PSC_05102026001', 'DV007', 1, 120000, N'Kiểm tra điều hòa'),
+('PSC_06102026001', 'DV002', 1, 150000, N'Kiểm tra hệ thống phanh'),
+('PSC_06102026001', 'DV005', 1, 350000, N'Cân chỉnh góc đặt bánh xe'),
+('PSC_07102026001', 'DV003', 1, 200000, N'Vệ sinh xe'),
+('PSC_07102026001', 'DV008', 1, 500000, N'Đánh bóng thân xe'),
+('PSC_08102026001', 'DV006', 1, 300000, N'Bảo dưỡng hệ thống làm mát');
 GO
 
 -- 16. CHI TIET PHU TUNG
 INSERT INTO ChiTietPhuTung (maPSC, maPhuTung, soLuong, donGia, ghiChu)
 VALUES
-('PSC001', 'LK001', 1, 180000, N'Lọc dầu động cơ'),
-('PSC001', 'PT001', 1, 120000, N'Bugi đánh lửa'),
-('PSC002', 'GT001', 1, 1500000, N'Thay giảm xóc trước'),
-('PSC003', 'DI001', 1, 1800000, N'Thay ắc quy'),
-('PSC004', 'NT001', 1, 750000, N'Thay gương chiếu hậu'),
-('PSC005', 'LK001', 1, 240000, N'Lọc dầu động cơ - đơn giá tại thời điểm sửa chữa'),
-('PSC005', 'PH002', 1, 160000, N'Bổ sung dầu phanh'),
-('PSC006', 'PH001', 1, 850000, N'Thay má phanh trước'),
-('PSC006', 'PH002', 1, 160000, N'Dầu phanh'),
-('PSC008', 'LM001', 1, 2500000, N'Thay két nước làm mát');
+('PSC_01102026001', 'LK001', 1, 180000, N'Lọc dầu động cơ'),
+('PSC_01102026001', 'PT001', 1, 120000, N'Bugi đánh lửa'),
+('PSC_02102026001', 'GT001', 1, 1500000, N'Thay giảm xóc trước'),
+('PSC_03102026001', 'DI001', 1, 1800000, N'Thay ắc quy'),
+('PSC_04102026001', 'NT001', 1, 750000, N'Thay gương chiếu hậu'),
+('PSC_05102026001', 'LK001', 1, 240000, N'Lọc dầu động cơ - đơn giá tại thời điểm sửa chữa'),
+('PSC_05102026001', 'PH002', 1, 160000, N'Bổ sung dầu phanh'),
+('PSC_06102026001', 'PH001', 1, 850000, N'Thay má phanh trước'),
+('PSC_06102026001', 'PH002', 1, 160000, N'Dầu phanh'),
+('PSC_08102026001', 'LM001', 1, 2500000, N'Thay két nước làm mát');
 GO
 
 -- 17. PHIEU NHAP KHO
@@ -553,22 +547,19 @@ VALUES
 ('PNK004', 'LP001', 1, 1220000);
 GO
 
--- 19. HOA DON
--- tienGiamGia: gia tri uu dai theo loai khuyen mai (VND hoac %).
--- soTienGiamGia: so tien duoc giam thuc te.
--- tongTienThanhToan = tongChiPhiDuKien - soTienGiamGia.
+-- 19. HOA DON (Dinh dang: HD_DDMMYYYYXXX)
 INSERT INTO HoaDon
     (maHoaDon, ngayLap, hinhThucThanhToan, trangThai, maPSC,
      maNVThuNgan, maKH, maChuongTrinh, tienGiamGia, soTienGiamGia, tongTienThanhToan)
 VALUES
-('HD001', '2026-10-01T10:30:00', N'Tiền mặt', N'Đã thanh toán', 'PSC001', 'NV2024004', 'KH001', 'KM001', 100000, 100000, 600000),
-('HD002', '2026-10-02T12:00:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC002', 'NV2024004', 'KH002', 'KM003', 3, 55500, 1794500),
-('HD003', '2026-10-03T13:00:00', N'Tiền mặt', N'Đã thanh toán', 'PSC003', 'NV2024004', 'KH003', NULL, 0, 0, 1980000),
-('HD004', '2026-10-04T15:30:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC004', 'NV2024004', 'KH004', 'KM001', 100000, 100000, 850000),
-('HD005', '2026-10-05T11:00:00', N'Tiền mặt', N'Đã thanh toán', 'PSC005', 'NV2024004', 'KH005', 'KM003', 3, 23100, 746900),
-('HD006', '2026-10-06T16:00:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC006', 'NV2024004', 'KH006', NULL, 0, 0, 1510000),
-('HD007', '2026-10-07T11:30:00', N'Tiền mặt', N'Đã thanh toán', 'PSC007', 'NV2024004', 'KH007', 'KM001', 100000, 100000, 600000),
-('HD008', '2026-10-08T13:00:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC008', 'NV2024004', 'KH008', NULL, 0, 0, 2800000);
+('HD_01102026001', '2026-10-01T10:30:00', N'Tiền mặt', N'Đã thanh toán', 'PSC_01102026001', 'NV2024004', 'KH001', 'KM001', 100000, 100000, 600000),
+('HD_02102026001', '2026-10-02T12:00:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC_02102026001', 'NV2024004', 'KH002', 'KM003', 3, 55500, 1794500),
+('HD_03102026001', '2026-10-03T13:00:00', N'Tiền mặt', N'Đã thanh toán', 'PSC_03102026001', 'NV2024004', 'KH003', NULL, 0, 0, 1980000),
+('HD_04102026001', '2026-10-04T15:30:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC_04102026001', 'NV2024004', 'KH004', 'KM001', 100000, 100000, 850000),
+('HD_05102026001', '2026-10-05T11:00:00', N'Tiền mặt', N'Đã thanh toán', 'PSC_05102026001', 'NV2024004', 'KH005', 'KM003', 3, 23100, 746900),
+('HD_06102026001', '2026-10-06T16:00:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC_06102026001', 'NV2024004', 'KH006', NULL, 0, 0, 1510000),
+('HD_07102026001', '2026-10-07T11:30:00', N'Tiền mặt', N'Đã thanh toán', 'PSC_07102026001', 'NV2024004', 'KH007', 'KM001', 100000, 100000, 600000),
+('HD_08102026001', '2026-10-08T13:00:00', N'Chuyển khoản', N'Đã thanh toán', 'PSC_08102026001', 'NV2024004', 'KH008', NULL, 0, 0, 2800000);
 GO
 
 /*==============================================================
@@ -597,10 +588,9 @@ SELECT * FROM ChiTietPhieuNhapKho;
 GO
 
 -- Kiem tra giai ma tai khoan mau:
-SELECT
+SELECT 
     tenDangNhap,
     CONVERT(VARCHAR(100), DECRYPTBYPASSPHRASE('123', matKhau)) AS matKhauGiaiMa,
     maVaiTro
 FROM TaiKhoan
-WHERE tenDangNhap = 'NV2024001';
 GO
