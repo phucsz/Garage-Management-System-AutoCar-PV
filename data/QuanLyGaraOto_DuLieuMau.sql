@@ -632,3 +632,5 @@ INSERT INTO ChiTietDichVu (maPSC, maDichVu, soLuong, donGia, ghiChu) VALUES
 INSERT INTO ChiTietPhuTung (maPSC, maPhuTung, soLuong, donGia, ghiChu) VALUES
 ('PSC_09102026001', 'LK001', 1, 180000, N'Lọc dầu động cơ'),
 ('PSC_10102026001', 'PH001', 1, 850000, N'Thay má phanh trước');
+
+select * from PhieuSuaChua

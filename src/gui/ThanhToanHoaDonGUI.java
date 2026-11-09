@@ -690,7 +690,7 @@ public class ThanhToanHoaDonGUI extends JPanel {
                 "Xác nhận thanh toán", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (chon != JOptionPane.YES_OPTION) return;
 
-        boolean ok = hoaDonBUS.xuLyThanhToan(maHoaDon, hinhThuc, khachDua, conPhaiThanhToan, giamGia);
+        boolean ok = hoaDonBUS.xuLyThanhToan(maHoaDon, hinhThuc, khachDua, conPhaiThanhToan);
         if (!ok) {
             JOptionPane.showMessageDialog(this,
                     "Thanh toán thất bại! Hóa đơn có thể đã được thanh toán hoặc xảy ra lỗi cơ sở dữ liệu.",

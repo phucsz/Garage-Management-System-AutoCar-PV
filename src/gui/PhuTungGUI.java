@@ -22,8 +22,13 @@ public class PhuTungGUI extends QuanLyCRUDGUI<PhuTung> {
 		refresh();
 	}
 
-	@Override protected List<PhuTung> load() throws SQLException { return bus.getAll(); }
-	@Override protected PhuTung from(String[] v) {
+	@Override 
+	protected List<PhuTung> load() throws SQLException { 
+		return bus.getAll(); 
+	}
+	
+	@Override 
+	protected PhuTung from(String[] v) {
 		if (v[0].isEmpty() || v[1].isEmpty() || v[7].isEmpty())
 			throw new IllegalArgumentException("Mã, tên và nhà cung cấp không được trống.");
 		double price = Double.parseDouble(v[4]);
@@ -33,15 +38,31 @@ public class PhuTungGUI extends QuanLyCRUDGUI<PhuTung> {
 		return new PhuTung(v[0], v[1], v[2].isEmpty() ? null : new DanhMucPhuTung(v[2]), v[3], price, stock, manufactured,
 				new NhaCungCap(v[7]));
 	}
-	@Override protected boolean insert(PhuTung value) throws SQLException { return bus.them(value); }
-	@Override protected boolean update(PhuTung value) throws SQLException { return bus.capNhat(value); }
-	@Override protected boolean remove(PhuTung value) throws SQLException { return bus.xoa(value.getMaPhuTung()); }
-	@Override protected String[] valuesOf(PhuTung value) {
+	@Override 
+	protected boolean insert(PhuTung value) throws SQLException { 
+		return bus.them(value); 
+	}
+	
+	@Override 
+	protected boolean update(PhuTung value) throws SQLException { 
+		return bus.capNhat(value); 
+	}
+	
+	@Override 
+	protected boolean remove(PhuTung value) throws SQLException { 
+		return bus.xoa(value.getMaPhuTung()); 
+	}
+	
+	@Override 
+	protected String[] valuesOf(PhuTung value) {
 		return new String[] { value.getMaPhuTung(), value.getTenPhuTung(),
 				value.getDanhMucPhuTung() == null ? "" : value.getDanhMucPhuTung().getMaDanhMuc(),
 				value.getDonViTinh(), String.valueOf(value.getDonGiaHienTai()), String.valueOf(value.getSoLuongTon()),
 				value.getNgaySanXuat() == null ? "" : value.getNgaySanXuat().toString(),
 				value.getNhaCungCap() == null ? "" : value.getNhaCungCap().getMaNCC() };
 	}
-	@Override protected String idOf(PhuTung value) { return value.getMaPhuTung(); }
+	@Override 
+	protected String idOf(PhuTung value) { 
+		return value.getMaPhuTung(); 
+	}
 }

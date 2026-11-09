@@ -14,9 +14,13 @@ public class HoaDonDAO {
         List<HoaDon> dsHoaDon = new ArrayList<>();
         Connection con = ConnectDB.getConnection();
         String sql = "SELECT h.*, " +
-                     "k.hoTenKH, k.noiSinh AS noiSinhKH, k.ngaySinh AS ngaySinhKH, k.cccd AS cccdKH, k.sdt AS sdtKH, k.diaChi AS diaChiKH, k.email AS emailKH " +
+                 "k.hoTenKH, k.noiSinh AS noiSinhKH, k.ngaySinh AS ngaySinhKH, k.cccd AS cccdKH, k.sdt AS sdtKH, k.diaChi AS diaChiKH, k.email AS emailKH, " +
+                 "COALESCE((SELECT SUM(ctdv.soLuong * ctdv.donGia) FROM ChiTietDichVu ctdv WHERE ctdv.maPSC = h.maPSC), 0) AS tongTienDichVu, " +
+                 "COALESCE((SELECT SUM(ctpt.soLuong * ctpt.donGia) FROM ChiTietPhuTung ctpt WHERE ctpt.maPSC = h.maPSC), 0) AS tongTienPhuTung, " +
+                 "km.tenChuongTrinh, km.ngayBatDau, km.ngayKetThuc, km.loaiKhuyenMai, km.giaTriKhuyenMai " +
                      "FROM HoaDon h " +
-                     "LEFT JOIN KhachHang k ON h.maKH = k.maKH";
+                     "LEFT JOIN KhachHang k ON h.maKH = k.maKH " +
+                     "LEFT JOIN ChuongTrinhKhuyenMai km ON h.maChuongTrinh = km.maChuongTrinh";
         
         try {
             PreparedStatement stmt = con.prepareStatement(sql);
@@ -31,9 +35,6 @@ public class HoaDonDAO {
                 String maNVThuNgan = rs.getString("maNVThuNgan");
                 String maKH = rs.getString("maKH");
                 String maChuongTrinh = rs.getString("maChuongTrinh");
-                double tienGiamGia = rs.getDouble("tienGiamGia");
-                double soTienGiamGia = rs.getDouble("soTienGiamGia");
-                double tongTienThanhToan = rs.getDouble("tongTienThanhToan");
 
                 // Khởi tạo Khách hàng đầy đủ thông tin
                 KhachHang kh = new KhachHang(maKH, 
@@ -47,10 +48,16 @@ public class HoaDonDAO {
                 );
 
                 PhieuSuaChua psc = new PhieuSuaChua(maPSC);
+                psc.setTongTienDichVu(rs.getDouble("tongTienDichVu"));
+                psc.setTongTienPhuTung(rs.getDouble("tongTienPhuTung"));
                 NhanVien nv = new NhanVien(maNVThuNgan);
-                ChuongTrinhKhuyenMai km = maChuongTrinh != null ? new ChuongTrinhKhuyenMai(maChuongTrinh) : null;
+                ChuongTrinhKhuyenMai km = maChuongTrinh != null ? new ChuongTrinhKhuyenMai(
+                    maChuongTrinh, rs.getString("tenChuongTrinh"),
+                    rs.getDate("ngayBatDau") != null ? rs.getDate("ngayBatDau").toLocalDate() : null,
+                    rs.getDate("ngayKetThuc") != null ? rs.getDate("ngayKetThuc").toLocalDate() : null,
+                    rs.getString("loaiKhuyenMai"), rs.getDouble("giaTriKhuyenMai")) : null;
 
-                HoaDon hd = new HoaDon(maHoaDon, ngayLap, hinhThucThanhToan, trangThai, psc, nv, kh, km, tienGiamGia, soTienGiamGia, tongTienThanhToan);
+                HoaDon hd = new HoaDon(maHoaDon, ngayLap, hinhThucThanhToan, trangThai, psc, nv, kh, km);
                 dsHoaDon.add(hd);
             }
         } catch (SQLException e) {
@@ -83,9 +90,13 @@ public class HoaDonDAO {
     public HoaDon getHoaDonByMa(String maHD) {
         Connection con = ConnectDB.getConnection();
         String sql = "SELECT h.*, " +
-                     "k.hoTenKH, k.noiSinh AS noiSinhKH, k.ngaySinh AS ngaySinhKH, k.cccd AS cccdKH, k.sdt AS sdtKH, k.diaChi AS diaChiKH, k.email AS emailKH " +
+                 "k.hoTenKH, k.noiSinh AS noiSinhKH, k.ngaySinh AS ngaySinhKH, k.cccd AS cccdKH, k.sdt AS sdtKH, k.diaChi AS diaChiKH, k.email AS emailKH, " +
+                 "COALESCE((SELECT SUM(ctdv.soLuong * ctdv.donGia) FROM ChiTietDichVu ctdv WHERE ctdv.maPSC = h.maPSC), 0) AS tongTienDichVu, " +
+                 "COALESCE((SELECT SUM(ctpt.soLuong * ctpt.donGia) FROM ChiTietPhuTung ctpt WHERE ctpt.maPSC = h.maPSC), 0) AS tongTienPhuTung, " +
+                 "km.tenChuongTrinh, km.ngayBatDau, km.ngayKetThuc, km.loaiKhuyenMai, km.giaTriKhuyenMai " +
                      "FROM HoaDon h " +
                      "LEFT JOIN KhachHang k ON h.maKH = k.maKH " +
+                     "LEFT JOIN ChuongTrinhKhuyenMai km ON h.maChuongTrinh = km.maChuongTrinh " +
                      "WHERE h.maHoaDon = ?";
         
         try {
@@ -102,9 +113,6 @@ public class HoaDonDAO {
                 String maNVThuNgan = rs.getString("maNVThuNgan");
                 String maKH = rs.getString("maKH");
                 String maChuongTrinh = rs.getString("maChuongTrinh");
-                double tienGiamGia = rs.getDouble("tienGiamGia");
-                double soTienGiamGia = rs.getDouble("soTienGiamGia");
-                double tongTienThanhToan = rs.getDouble("tongTienThanhToan");
 
                 KhachHang kh = new KhachHang(maKH, 
                     rs.getString("hoTenKH"), 
@@ -117,10 +125,16 @@ public class HoaDonDAO {
                 );
 
                 PhieuSuaChua psc = new PhieuSuaChua(maPSC);
+                psc.setTongTienDichVu(rs.getDouble("tongTienDichVu"));
+                psc.setTongTienPhuTung(rs.getDouble("tongTienPhuTung"));
                 NhanVien nv = new NhanVien(maNVThuNgan);
-                ChuongTrinhKhuyenMai km = maChuongTrinh != null ? new ChuongTrinhKhuyenMai(maChuongTrinh) : null;
+                ChuongTrinhKhuyenMai km = maChuongTrinh != null ? new ChuongTrinhKhuyenMai(
+                    maChuongTrinh, rs.getString("tenChuongTrinh"),
+                    rs.getDate("ngayBatDau") != null ? rs.getDate("ngayBatDau").toLocalDate() : null,
+                    rs.getDate("ngayKetThuc") != null ? rs.getDate("ngayKetThuc").toLocalDate() : null,
+                    rs.getString("loaiKhuyenMai"), rs.getDouble("giaTriKhuyenMai")) : null;
 
-                return new HoaDon(maHoaDon, ngayLap, hinhThucThanhToan, trangThai, psc, nv, kh, km, tienGiamGia, soTienGiamGia, tongTienThanhToan);
+                return new HoaDon(maHoaDon, ngayLap, hinhThucThanhToan, trangThai, psc, nv, kh, km);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -128,17 +142,15 @@ public class HoaDonDAO {
         return null;
     }
 
-    public boolean capNhatThanhToan(String maHoaDon, String hinhThucThanhToan, double soTienGiamGia, double tongTienThanhToan, String trangThai) {
+    public boolean capNhatThanhToan(String maHoaDon, String hinhThucThanhToan, String trangThai) {
         Connection con = ConnectDB.getConnection();
-        String sql = "UPDATE HoaDon SET hinhThucThanhToan = ?, soTienGiamGia = ?, tongTienThanhToan = ?, trangThai = ?, ngayLap = GETDATE() WHERE maHoaDon = ?";
+        String sql = "UPDATE HoaDon SET hinhThucThanhToan = ?, trangThai = ?, ngayLap = GETDATE() WHERE maHoaDon = ?";
         
         try {
             PreparedStatement stmt = con.prepareStatement(sql);
             stmt.setString(1, hinhThucThanhToan);
-            stmt.setDouble(2, soTienGiamGia);
-            stmt.setDouble(3, tongTienThanhToan);
-            stmt.setString(4, trangThai);
-            stmt.setString(5, maHoaDon);
+            stmt.setString(2, trangThai);
+            stmt.setString(3, maHoaDon);
             
             int n = stmt.executeUpdate();
             return n > 0;

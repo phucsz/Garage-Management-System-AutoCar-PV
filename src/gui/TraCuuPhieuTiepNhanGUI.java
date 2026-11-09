@@ -627,7 +627,7 @@ public class TraCuuPhieuTiepNhanGUI extends JPanel {
 	private static class ThaoTacRenderer extends JPanel implements TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 		private static final Color DASH = new Color(150, 155, 165);
-		private final SlotIcon iconXem = new SlotIcon(IMG_XEM, 16, 16, DASH);
+		private final SlotIcon iconXem = new SlotIcon("/images/icon_xemPhieu.png", 16, 16, DASH);
 
 		ThaoTacRenderer() {
 			setOpaque(true);

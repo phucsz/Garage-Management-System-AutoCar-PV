@@ -55,7 +55,7 @@ public class HoaDonBUS {
         return chiTietPhuTungDAO.getByMaPSC(maPSC.trim());
     }
 
-    public boolean xuLyThanhToan(String maHoaDon, String hinhThucThanhToan, double tienKhachDua, double tongTienThanhToan, double soTienGiamGia) {
+    public boolean xuLyThanhToan(String maHoaDon, String hinhThucThanhToan, double tienKhachDua, double tongTienThanhToan) {
         if (maHoaDon == null || maHoaDon.trim().isEmpty()) {
             return false;
         }
@@ -76,6 +76,6 @@ public class HoaDonBUS {
         }
 
         String trangThaiMoi = "Đã thanh toán";
-        return hoaDonDAO.capNhatThanhToan(maHoaDon, hinhThucThanhToan, soTienGiamGia, tongTienThanhToan, trangThaiMoi);
+        return hoaDonDAO.capNhatThanhToan(maHoaDon, hinhThucThanhToan, trangThaiMoi);
     }
 }
