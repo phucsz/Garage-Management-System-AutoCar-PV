@@ -72,7 +72,7 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	private Input txtSoDienThoai, txtKhachHang;
 	private Input txtBienSo, txtHangXe, txtSoKm;
 	private JTextArea txtYeuCau;
-	private Input txtKyThuatVien;
+	private Input txtTiepNhanVien;
 
 	private final HangMucKiemTraDAO hangMucDAO = new HangMucKiemTraDAO();
 	private final Set<String> maHangMucDaChon = new HashSet<>();
@@ -112,7 +112,7 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		sp.getVerticalScrollBar().setUnitIncrement(16);
 		add(sp, BorderLayout.CENTER);
 
-		txtKyThuatVien.setText(nguoiTiepNhan);
+		txtTiepNhanVien.setText(nguoiTiepNhan);
 		refresh();
 	}
 
@@ -578,8 +578,8 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	}
 
 	private JPanel taoPhanKyThuatVien() {
-		txtKyThuatVien = new Input(null, true);
-		return labeled("Kỹ thuật viên tiếp nhận", txtKyThuatVien);
+		txtTiepNhanVien = new Input(null, true);
+		return labeled("Nhân viên tiếp nhận", txtTiepNhanVien);
 	}
 
 	private JPanel taoPhanNut() {
@@ -695,7 +695,7 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		double soKm = Double.parseDouble(soKmText);
 		String maPhieu = txtMaPhieu.getText().trim();
 		PhieuTiepNhan phieu = new PhieuTiepNhan(maPhieu, LocalDateTime.now(), txtYeuCau.getText().trim(), soKm,
-				new NhanVien(txtKyThuatVien.getText().trim()), new Xe(bienSo), new KhachHang());
+				new NhanVien(txtTiepNhanVien.getText().trim()), new Xe(bienSo), new KhachHang());
 		phieu.setChiTietHangMuc(new ArrayList<>());
 		themChiTietTuBang(phieu, modelNoiThat);
 		themChiTietTuBang(phieu, modelNgoaiThat);
