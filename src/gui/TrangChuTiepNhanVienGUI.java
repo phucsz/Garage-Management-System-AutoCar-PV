@@ -26,14 +26,14 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 	private static final String ICON_TRANG_CHU = IMG_TRANG_CHU; 
 	private static final String ICON_KHACH_HANG = IMG_KHACH_HANG;
 	private static final String ICON_TIEP_NHAN = IMG_TIEP_NHAN; 
-	private static final String ICON_SUA_CHUA = IMG_SUA_CHUA; 
+	//private static final String ICON_SUA_CHUA = IMG_SUA_CHUA; 
 	private static final String ICON_BAO_CAO = IMG_BAO_CAO;
 	
 	private static final MucMenu[] MENU = {
 			new MucMenu(KEY_TRANG_CHU, "Trang Chủ", ICON_TRANG_CHU),
 			new MucMenu(KEY_KHACH_HANG, "Khách Hàng & Xe", ICON_KHACH_HANG),
 			new MucMenu(KEY_TIEP_NHAN, "Tiếp Nhận Xe", ICON_TIEP_NHAN),
-			new MucMenu(KEY_SUA_CHUA, "Lập Phiếu Sửa Chữa", ICON_SUA_CHUA),
+			//new MucMenu(KEY_SUA_CHUA, "Lập Phiếu Sửa Chữa", ICON_SUA_CHUA),
 			new MucMenu(KEY_BAO_CAO, "Báo Cáo Thống Kê", ICON_BAO_CAO) };
 
 	private final LapPhieuTiepNhanGUI lapPhieuGUI;

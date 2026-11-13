@@ -53,6 +53,7 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
     private static final String ICON_DS_CONG_VIEC = "/images/icon_dsCongViec.png";
     private static final String ICON_CONG_VIEC_PHU_TRACH = "/images/icon_cvPhuTrach.png";
     private static final String ICON_YEU_CAU_XUAT_KHO = "/images/icon_yeuCauXuatKho.png";
+    private static final String ICON_SUA_CHUA = IMG_SUA_CHUA;
     private static final String ICON_BAO_CAO = IMG_BAO_CAO;
 
     // =========================================================
@@ -62,6 +63,7 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
     private static final MucMenu[] MENU = {
         new MucMenu(KEY_TRANG_CHU, "Trang Chủ", ICON_TRANG_CHU),
         new MucMenu(KEY_DS_CONG_VIEC, "Danh Sách Công Việc", ICON_DS_CONG_VIEC),
+        new MucMenu(KEY_SUA_CHUA, "Lập Phiếu Sửa Chữa", ICON_SUA_CHUA),
         new MucMenu(KEY_CONG_VIEC_PHU_TRACH, "Công Việc Phụ Trách", ICON_CONG_VIEC_PHU_TRACH),
         new MucMenu(KEY_YEU_CAU_XUAT_KHO, "Yêu Cầu Xuất Kho", ICON_YEU_CAU_XUAT_KHO),
         new MucMenu(KEY_BAO_CAO, "Báo Cáo Thống Kê", ICON_BAO_CAO)
