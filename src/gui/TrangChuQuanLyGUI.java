@@ -21,6 +21,8 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 	private static final String ICON_NHAN_VIEN = IMG_NHAN_VIEN; 
 	private static final String ICON_KHUYEN_MAI = IMG_KHUYEN_MAI; 
 	private static final String ICON_BAO_CAO = IMG_BAO_CAO; 
+	
+	
 
 	private static final MucMenu[] MENU = {
 			new MucMenu(KEY_TRANG_CHU, "Trang Chủ", ICON_TRANG_CHU),
@@ -29,19 +31,39 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 			new MucMenu(KEY_NHAN_VIEN, "Nhân Viên", ICON_NHAN_VIEN),
 			new MucMenu(KEY_KHUYEN_MAI, "Khuyến Mãi", ICON_KHUYEN_MAI),
 			new MucMenu(KEY_BAO_CAO, "Báo Cáo Thống Kê", ICON_BAO_CAO) };
-
+	
+	public static final String KEY_NHAP_KHO = "nhapkho";
+	public static final String KEY_TRA_CUU_PHIEU_NHAP_KHO = "tracuuphieunhapkho";
+	
 	private final NhanVienGUI nhanVienGUI;
-	private final PhuTungGUI phuTungGUI;
+	private final QuanLyPhuTungGUI phuTungGUI;
 	private final QuanLyDichVuGUI dichVuGUI;
+	private final NhapKhoGUI nhapKhoGUI;
+	private final TraCuuPhieuNhapKhoGUI traCuuPhieuNhapGUI;
 	private final KhuyenMaiGUI khuyenMaiGUI;
+	
 
+	
 	public TrangChuQuanLyGUI(String hoTen) {
 		super(hoTen, "Quản lý", MENU);
 
 		// Màn hình đã làm xong thì đăng ký vào CardLayout; các mục còn lại tự có panel tạm.
 		nhanVienGUI = new NhanVienGUI(() -> hienThi(KEY_TRANG_CHU));
 		themCard(KEY_NHAN_VIEN, nhanVienGUI);
-		phuTungGUI = new PhuTungGUI();
+		
+		phuTungGUI = new QuanLyPhuTungGUI(
+		        () -> hienThi(KEY_TRANG_CHU),                         // Trang chủ quản lý
+		        () -> hienThi(KEY_NHAP_KHO, KEY_PHU_TUNG),            // Nhập kho
+		        () -> hienThi(KEY_TRA_CUU_PHIEU_NHAP_KHO, KEY_PHU_TUNG)); // Tra cứu phiếu nhập kho
+		nhapKhoGUI = new NhapKhoGUI(() -> hienThi(KEY_PHU_TUNG));       // nút "Quản lý kho"
+		traCuuPhieuNhapGUI = new TraCuuPhieuNhapKhoGUI(() -> hienThi(KEY_PHU_TUNG));
+		nhapKhoGUI.setNguoiLap("123", hoTen); // người lập phiếu (xem lưu ý bên dưới)
+
+		themCard(KEY_PHU_TUNG, phuTungGUI);
+		themCard(KEY_NHAP_KHO, nhapKhoGUI);
+		themCard(KEY_TRA_CUU_PHIEU_NHAP_KHO, traCuuPhieuNhapGUI);
+		
+		
 		dichVuGUI = new QuanLyDichVuGUI(null);
 		khuyenMaiGUI = new KhuyenMaiGUI(null);
 		themCard(KEY_PHU_TUNG, phuTungGUI);
