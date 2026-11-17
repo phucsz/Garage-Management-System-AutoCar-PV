@@ -1,5 +1,6 @@
 package gui;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
@@ -10,6 +11,9 @@ import entity.TaiKhoan;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.net.URL;
 import java.sql.SQLException;
 
@@ -65,10 +69,14 @@ public class DangNhapGUI extends JFrame {
     private void initComponents() {
 
         // Panel nền (bố cục tuyệt đối để bám sát thiết kế)
-        JPanel pnlNen = new JPanel(null);
-        pnlNen.setBackground(MAU_NEN);
-        pnlNen.setPreferredSize(new Dimension(950, 551));
-        setContentPane(pnlNen);
+    	// Panel nền sử dụng hình ảnh
+    	BackgroundPanel pnlNen = new BackgroundPanel(
+    	        "/images/Login-background.png"
+    	);
+
+    	pnlNen.setPreferredSize(new Dimension(950, 551));
+
+    	setContentPane(pnlNen);
 
         // ---------- Bên trái: logo + mô tả ----------
         URL imgUrl = getClass().getResource("/images/logo-light-transparent.png");
@@ -175,6 +183,8 @@ public class DangNhapGUI extends JFrame {
         setLocationRelativeTo(null);
         getRootPane().setDefaultButton(btnDangNhap);
     }
+    
+    
     private void hienThiCuaSoQuenMatKhau() {
         // Tạo một JDialog (this: cửa sổ cha, "Khôi phục mật khẩu": Tiêu đề, true: Modal khóa màn hình cha)
         JDialog dialog = new JDialog(DangNhapGUI.this, "Khôi phục mật khẩu", true);
@@ -300,6 +310,98 @@ public class DangNhapGUI extends JFrame {
     // =====================================================================
 
     /** Panel nền bo góc. */
+    private static class BackgroundPanel extends JPanel {
+
+        private static final long serialVersionUID = 1L;
+
+        private BufferedImage backgroundImage;
+
+        public BackgroundPanel(String imagePath) {
+
+            setLayout(null);
+            setOpaque(true);
+
+            try {
+                URL url = getClass().getResource(imagePath);
+
+                if (url != null) {
+                    BufferedImage originalImage = ImageIO.read(url);
+
+                    // Làm mờ hình ảnh
+                    backgroundImage = lamMoAnh(originalImage, 3);
+
+                } else {
+                    System.err.println("Không tìm thấy hình ảnh: " + imagePath);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Hàm làm mờ hình ảnh
+        private BufferedImage lamMoAnh(BufferedImage image, int radius) {
+
+            int size = radius * 2 + 1;
+
+            float[] matrix = new float[size];
+
+            for (int i = 0; i < size; i++) {
+                matrix[i] = 1.0f / size;
+            }
+
+            Kernel horizontal = new Kernel(size, 1, matrix);
+            Kernel vertical = new Kernel(1, size, matrix);
+
+            BufferedImage temp = new BufferedImage(
+                    image.getWidth(),
+                    image.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            BufferedImage result = new BufferedImage(
+                    image.getWidth(),
+                    image.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            ConvolveOp op1 = new ConvolveOp(
+                    horizontal, ConvolveOp.EDGE_NO_OP, null
+            );
+
+            ConvolveOp op2 = new ConvolveOp(
+                    vertical, ConvolveOp.EDGE_NO_OP, null
+            );
+
+            op1.filter(image, temp);
+            op2.filter(temp, result);
+
+            return result;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+
+            super.paintComponent(g);
+
+            if (backgroundImage != null) {
+
+                Graphics2D g2 = (Graphics2D) g.create();
+
+                g2.setComposite(
+                        AlphaComposite.getInstance(
+                                AlphaComposite.SRC_OVER,
+                                0.90f //Chỉnh độ mờ của ảnh nền
+                        )
+                );
+
+  
+                g2.drawImage(backgroundImage,0, 0, getWidth(), getHeight(), null);
+                g2.dispose();
+            }
+        }
+    }
+    
     private static class RoundedPanel extends JPanel {
         /**
 		 * 
