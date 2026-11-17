@@ -22,8 +22,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -59,15 +57,12 @@ import javax.swing.table.TableCellRenderer;
  *  - Nhập kho                 (NhapKhoGUI)            - nút "Nhập kho" ở góc trên phải
  *  - Tra cứu phiếu nhập kho   (TraCuuPhieuNhapKhoGUI) - nút "Tra cứu phiếu nhập kho"
  *
- * Gồm 2 thẻ:
+ * Gồm 2 thẻ (giống ảnh mẫu):
  *  1. Tra cứu phụ tùng: Mã / Tên phụ tùng, Loại phụ tùng, Tình trạng tồn, nút Tìm kiếm / Làm mới
- *  2. Danh sách phụ tùng: Mã, Tên, Loại, ĐVT, Tồn kho, Ngày sản xuất, Nhà cung cấp, Giá bán hiện tại,
- *     Trạng thái (tự tính theo tồn kho), Thao tác (Xem, Sửa)
+ *  2. Danh sách phụ tùng: Mã, Tên phụ tùng, Loại phụ tùng, ĐVT, Tồn kho, Tồn tối thiểu, Số lô,
+ *     Giá bán hiện tại (đ), Trạng thái (tự tính từ tồn kho và tồn tối thiểu), Thao tác (Xem, Sửa)
  *
- * Bảng CSDL: PhuTung(maPhuTung, tenPhuTung, maDanhMuc, donViTinh, donGiaHienTai, soLuongTon, ngaySanXuat, maNCC)
- *            DanhMucPhuTung(maDanhMuc, tenDanhMuc), NhaCungCap(maNCC, tenNCC, ...).
- *
- * KHÔNG có dữ liệu mẫu. Mọi chỗ cần lấy / ghi dữ liệu từ CSDL là các hàm có "TODO":
+ * KHÔNG có dữ liệu mẫu và chưa gắn với CSDL cụ thể. Mọi chỗ cần lấy / ghi dữ liệu là các hàm "TODO":
  *  layDanhSachPhuTung, layDanhSachDanhMuc, capNhatPhuTung.
  */
 public class QuanLyPhuTungGUI extends JPanel {
@@ -84,25 +79,19 @@ public class QuanLyPhuTungGUI extends JPanel {
 	private static final String TT_CON_HANG = "Còn hàng";
 	private static final String TT_SAP_HET = "Sắp hết";
 	private static final String TT_HET_HANG = "Hết hàng";
-	/**
-	 * Tồn kho từ 1 đến ngưỡng này được coi là "Sắp hết". CSDL hiện chưa có cột "tồn tối thiểu".
-	 * TODO: nếu sau này có cột tồn tối thiểu cho từng phụ tùng, thay hàm tinhTrangTon bằng so sánh với cột đó.
-	 */
-	private static final int NGUONG_SAP_HET = 5;
 
 	private static final String TAT_CA_NHOM = "Tất cả nhóm";
 	private static final String TAT_CA_TINH_TRANG = "Tất cả";
 
 	private static final int SO_DONG_TRANG = 8;
-	private static final int CAO_DONG = 52;
+	private static final int CAO_DONG = 58;
 	private static final int CAO_HEADER = 40;
 	private static final int PAD_TRAI = 16;
 	private static final int NUT = 32;
 	private static final int KHOANG = 8;
-	private static final int COL_TRANG_THAI = 8;
 	private static final int COL_THAO_TAC = 9;
+	private static final Color DASH = new Color(150, 155, 165);
 
-	private static final DateTimeFormatter FMT_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private static final NumberFormat FMT_SO = NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));
 	private static final Border O_BANG = new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(236, 240, 245)),
 			new EmptyBorder(0, PAD_TRAI, 0, 8));
@@ -122,24 +111,22 @@ public class QuanLyPhuTungGUI extends JPanel {
 		}
 	}
 
-	/** Một dòng phụ tùng. TODO: có thể thay bằng entity.PhuTung của project. */
+	/** Một dòng phụ tùng. TODO: có thể thay bằng entity.PhuTung của project (sau khi có CSDL mới). */
 	private static class PhuTungRow {
-		final String ma, ten, maDanhMuc, tenDanhMuc, donViTinh, maNCC, tenNCC;
-		final int soLuongTon;
-		final LocalDate ngaySanXuat; // có thể null
+		final String ma, ten, maDanhMuc, tenDanhMuc, donViTinh;
+		final int soLuongTon, tonToiThieu, soLo;
 		final double donGia;
 
 		PhuTungRow(String ma, String ten, String maDanhMuc, String tenDanhMuc, String donViTinh, int soLuongTon,
-				LocalDate ngaySanXuat, String maNCC, String tenNCC, double donGia) {
+				int tonToiThieu, int soLo, double donGia) {
 			this.ma = ma;
 			this.ten = ten;
 			this.maDanhMuc = maDanhMuc;
 			this.tenDanhMuc = tenDanhMuc;
 			this.donViTinh = donViTinh;
 			this.soLuongTon = soLuongTon;
-			this.ngaySanXuat = ngaySanXuat;
-			this.maNCC = maNCC;
-			this.tenNCC = tenNCC;
+			this.tonToiThieu = tonToiThieu;
+			this.soLo = soLo;
 			this.donGia = donGia;
 		}
 	}
@@ -208,33 +195,32 @@ public class QuanLyPhuTungGUI extends JPanel {
 	// =====================================================================
 
 	/**
-	 * Lấy danh sách phụ tùng theo bộ lọc (kèm tên danh mục và tên nhà cung cấp - JOIN 2 bảng).
-	 * @param tuKhoa   mã hoặc tên cần tìm ("" = không lọc), nên tìm gần đúng: LIKE %...%
+	 * Lấy danh sách phụ tùng theo bộ lọc.
+	 * @param tuKhoa    mã hoặc tên cần tìm ("" = không lọc), nên tìm gần đúng: LIKE %...%
 	 * @param maDanhMuc mã nhóm phụ tùng cần lọc (null = tất cả nhóm)
-	 * TODO: gọi DAO, ví dụ phuTungDAO.timKiem(tuKhoa, maDanhMuc), rồi đổi mỗi entity thành
-	 * new PhuTungRow(ma, ten, maDanhMuc, tenDanhMuc, donViTinh, soLuongTon, ngaySanXuat, maNCC, tenNCC, donGia).
-	 * Việc lọc theo "Tình trạng tồn" được xử lý ở giao diện (trạng thái tự tính theo tồn kho).
+	 * TODO: gọi DAO rồi đổi mỗi entity thành new PhuTungRow(ma, ten, maDanhMuc, tenDanhMuc, donViTinh,
+	 * soLuongTon, tonToiThieu, soLo, donGia).
+	 * Việc lọc theo "Tình trạng tồn" được xử lý ở giao diện (trạng thái tự tính từ tồn kho và tồn tối thiểu).
 	 */
 	private List<PhuTungRow> layDanhSachPhuTung(String tuKhoa, String maDanhMuc) {
 		List<PhuTungRow> ds = new ArrayList<>();
-		// TODO: ds.add(new PhuTungRow(pt.getMaPhuTung(), pt.getTenPhuTung(), ...));
+		// TODO: ds.add(new PhuTungRow(...));
 		return ds;
 	}
 
 	/**
-	 * Lấy các nhóm phụ tùng để đổ vào ô lọc.
-	 * TODO: SELECT maDanhMuc, tenDanhMuc FROM DanhMucPhuTung ORDER BY tenDanhMuc
-	 *       rồi ds.add(new MucChon(maDanhMuc, tenDanhMuc)).
+	 * Lấy các nhóm phụ tùng để đổ vào ô lọc "Loại phụ tùng".
+	 * TODO: gọi DAO rồi ds.add(new MucChon(maNhom, tenNhom)).
 	 */
 	private List<MucChon> layDanhSachDanhMuc() {
 		List<MucChon> ds = new ArrayList<>();
-		// TODO: ds.add(new MucChon(dm.getMaDanhMuc(), dm.getTenDanhMuc()));
+		// TODO: ds.add(new MucChon(...));
 		return ds;
 	}
 
 	/**
-	 * Cập nhật thông tin phụ tùng (tên, nhóm, đơn vị tính, giá bán hiện tại). Tồn kho KHÔNG sửa tay ở đây
-	 * (tồn kho thay đổi qua nhập kho / xuất kho).
+	 * Cập nhật thông tin phụ tùng (tên, nhóm, đơn vị tính, giá bán, tồn tối thiểu).
+	 * Tồn kho và số lô KHÔNG sửa tay ở đây (thay đổi qua nhập kho / xuất kho).
 	 * @return true nếu cập nhật thành công
 	 */
 	private boolean capNhatPhuTung(PhuTungRow pt) {
@@ -365,11 +351,11 @@ public class QuanLyPhuTungGUI extends JPanel {
 	// THẺ 2: DANH SÁCH PHỤ TÙNG
 	// =====================================================================
 	private CardPanel taoTheDanhSach() {
-		cardDanhSach = new CardPanel("Danh sách phụ tùng", "");
+		cardDanhSach = new CardPanel("Danh sách phụ tùng", "Đơn giá chưa tính thuế");
 		cardDanhSach.getBody().setBorder(new EmptyBorder(0, 0, 0, 0));
 
-		model = new DefaultTableModel(new String[] { "Mã", "Tên phụ tùng", "Loại phụ tùng", "ĐVT", "Tồn kho",
-				"Ngày sản xuất", "Nhà cung cấp", "Giá bán hiện tại (đ)", "Trạng thái", "Thao tác" }, 0) {
+		model = new DefaultTableModel(new String[] { "Mã", "Tên Phụ tùng", "Loại phụ tùng", "ĐVT", "Tồn kho",
+				"Tồn tối thiểu", "Số lô", "Giá bán hiện tại (đ)", "Trạng thái", "Thao tác" }, 0) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -379,8 +365,8 @@ public class QuanLyPhuTungGUI extends JPanel {
 		};
 		tblPhuTung = new BangCoThongBao(model);
 		tblPhuTung.setThongBaoTrong("Không có phụ tùng nào để hiển thị.");
-		tuyChinhBang(tblPhuTung, new int[] { 90, 190, 170, 70, 80, 110, 190, 140, 110, 100 },
-				new TableCellRenderer[] { new CellRenderer(true), new CellRenderer(false), new CellRenderer(false),
+		tuyChinhBang(tblPhuTung, new int[] { 80, 200, 150, 70, 80, 100, 70, 150, 110, 100 },
+				new TableCellRenderer[] { new CellRenderer(true), new NhieuDongRenderer(), new NhieuDongRenderer(),
 						new CellRenderer(false), new CellRenderer(false), new CellRenderer(false),
 						new CellRenderer(false), new CellRenderer(false), new BadgeRenderer(),
 						new ThaoTacRenderer(new SlotIcon(IMG_XEM, 16, 16, DASH), ThaoTacRenderer.NEN_XANH_NHAT,
@@ -473,7 +459,7 @@ public class QuanLyPhuTungGUI extends JPanel {
 		dsPhuTung.clear();
 		if (ds != null) {
 			for (PhuTungRow p : ds) {
-				if (tinhTrang == null || tinhTrang.equals(tinhTrangTon(p.soLuongTon))) {
+				if (tinhTrang == null || tinhTrang.equals(tinhTrangTon(p))) {
 					dsPhuTung.add(p);
 				}
 			}
@@ -504,11 +490,9 @@ public class QuanLyPhuTungGUI extends JPanel {
 		for (int i = tu; i < den; i++) {
 			PhuTungRow p = dsPhuTung.get(i);
 			model.addRow(new Object[] { p.ma, p.ten, p.tenDanhMuc, p.donViTinh == null ? "" : p.donViTinh,
-					p.soLuongTon, p.ngaySanXuat == null ? "" : p.ngaySanXuat.format(FMT_NGAY),
-					p.tenNCC, FMT_SO.format(p.donGia), tinhTrangTon(p.soLuongTon), "" });
+					p.soLuongTon, p.tonToiThieu, p.soLo, FMT_SO.format(p.donGia), tinhTrangTon(p), "" });
 		}
 
-		cardDanhSach.setNote(tong + " phụ tùng");
 		lblHienThi.setText("Hiển thị " + (den - tu) + " / " + tong + " phụ tùng");
 		lblSoTrang.setText(String.valueOf(trang));
 		btnTruoc.setEnabled(trang > 1);
@@ -525,11 +509,12 @@ public class QuanLyPhuTungGUI extends JPanel {
 		return (r >= 0 && idx < dsPhuTung.size()) ? dsPhuTung.get(idx) : null;
 	}
 
-	private static String tinhTrangTon(int soLuongTon) {
-		if (soLuongTon <= 0) {
+	/** Hết hàng: tồn = 0; Sắp hết: tồn <= tồn tối thiểu; còn lại: Còn hàng. */
+	private static String tinhTrangTon(PhuTungRow p) {
+		if (p.soLuongTon <= 0) {
 			return TT_HET_HANG;
 		}
-		return soLuongTon <= NGUONG_SAP_HET ? TT_SAP_HET : TT_CON_HANG;
+		return p.soLuongTon <= p.tonToiThieu ? TT_SAP_HET : TT_CON_HANG;
 	}
 
 	// =====================================================================
@@ -539,9 +524,8 @@ public class QuanLyPhuTungGUI extends JPanel {
 		JOptionPane.showMessageDialog(this,
 				"Mã phụ tùng: " + p.ma + "\nTên phụ tùng: " + p.ten + "\nLoại phụ tùng: " + p.tenDanhMuc
 						+ "\nĐơn vị tính: " + (p.donViTinh == null ? "" : p.donViTinh) + "\nTồn kho: " + p.soLuongTon
-						+ " (" + tinhTrangTon(p.soLuongTon) + ")\nNgày sản xuất: "
-						+ (p.ngaySanXuat == null ? "" : p.ngaySanXuat.format(FMT_NGAY)) + "\nNhà cung cấp: "
-						+ p.tenNCC + "\nGiá bán hiện tại: " + FMT_SO.format(p.donGia) + " đ",
+						+ " (" + tinhTrangTon(p) + ")\nTồn tối thiểu: " + p.tonToiThieu + "\nSố lô: " + p.soLo
+						+ "\nGiá bán hiện tại: " + FMT_SO.format(p.donGia) + " đ",
 				"Thông tin phụ tùng", JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -556,19 +540,21 @@ public class QuanLyPhuTungGUI extends JPanel {
 		}
 
 		String[] kq = hienFormDialog("Sửa thông tin phụ tùng",
-				new String[] { "Mã phụ tùng", "Tên phụ tùng *", "Loại phụ tùng *", "Đơn vị tính", "Giá bán hiện tại (đ) *",
-						"Tồn kho", "Ngày sản xuất", "Nhà cung cấp" },
+				new String[] { "Mã phụ tùng", "Tên phụ tùng *", "Loại phụ tùng *", "Đơn vị tính",
+						"Giá bán hiện tại (đ) *", "Tồn tối thiểu *", "Tồn kho", "Số lô" },
 				new String[] { p.ma, p.ten, p.tenDanhMuc, p.donViTinh == null ? "" : p.donViTinh,
-						String.valueOf((long) p.donGia), String.valueOf(p.soLuongTon),
-						p.ngaySanXuat == null ? "" : p.ngaySanXuat.format(FMT_NGAY), p.tenNCC },
-				new boolean[] { true, false, false, false, false, true, true, true },
-				new String[][] { null, null, tenNhom.toArray(new String[0]), null, null, null, null, null },
-				v -> {
+						String.valueOf((long) p.donGia), String.valueOf(p.tonToiThieu), String.valueOf(p.soLuongTon),
+						String.valueOf(p.soLo) },
+				new boolean[] { true, false, false, false, false, false, true, true },
+				new String[][] { null, null, tenNhom.toArray(new String[0]), null, null, null, null, null }, v -> {
 					if (v[1].isEmpty()) {
 						return "Vui lòng nhập tên phụ tùng!";
 					}
-					if (!v[4].replaceAll("[.,\\s]", "").matches("\\d+")) {
+					if (!v[4].replaceAll("[.,\\s]", "").matches("\\d{1,12}")) {
 						return "Giá bán phải là số không âm (VD: 180000 hoặc 180.000)!";
+					}
+					if (!v[5].matches("\\d{1,9}")) {
+						return "Tồn tối thiểu phải là số nguyên không âm!";
 					}
 					return null;
 				});
@@ -583,7 +569,7 @@ public class QuanLyPhuTungGUI extends JPanel {
 			}
 		}
 		PhuTungRow moi = new PhuTungRow(p.ma, kq[1], maDanhMuc, kq[2], kq[3].isEmpty() ? null : kq[3], p.soLuongTon,
-				p.ngaySanXuat, p.maNCC, p.tenNCC, Double.parseDouble(kq[4].replaceAll("[.,\\s]", "")));
+				Integer.parseInt(kq[5]), p.soLo, Double.parseDouble(kq[4].replaceAll("[.,\\s]", "")));
 		if (capNhatPhuTung(moi)) {
 			JOptionPane.showMessageDialog(this, "Đã cập nhật phụ tùng " + p.ma + ".", "Thông báo",
 					JOptionPane.INFORMATION_MESSAGE);
@@ -672,8 +658,6 @@ public class QuanLyPhuTungGUI extends JPanel {
 	// =====================================================================
 	// BẢNG: ĐỊNH DẠNG, RENDERER
 	// =====================================================================
-	private static final Color DASH = new Color(150, 155, 165);
-
 	private static void tuyChinhBang(JTable t, int[] rong, TableCellRenderer[] renderers) {
 		t.setRowHeight(CAO_DONG);
 		t.setShowGrid(false);
@@ -789,6 +773,25 @@ public class QuanLyPhuTungGUI extends JPanel {
 		}
 	}
 
+	/** Ô cho phép xuống dòng khi chữ dài (VD: "Gầm và hệ thống treo"). */
+	private static class NhieuDongRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+			int rong = Math.max(40, t.getColumnModel().getColumn(c).getWidth() - PAD_TRAI - 8);
+			String s = v == null ? "" : v.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+			super.getTableCellRendererComponent(t, "<html><body style='width:" + rong + "px'>" + s + "</body></html>",
+					false, false, r, c);
+			setOpaque(true);
+			setBackground(mauNen(sel, r));
+			setForeground(TEXT_DARK);
+			setFont(FONT_BODY);
+			setBorder(O_BANG);
+			return this;
+		}
+	}
+
 	/** Huy hiệu trạng thái tồn kho bo tròn, màu theo trạng thái. */
 	private static class Badge extends JLabel {
 		private static final long serialVersionUID = 1L;
@@ -806,8 +809,8 @@ public class QuanLyPhuTungGUI extends JPanel {
 				nen = OK_BG;
 				setForeground(OK_FG);
 			} else if (TT_SAP_HET.equals(t)) {
-				nen = new Color(255, 244, 214);
-				setForeground(new Color(146, 100, 0));
+				nen = new Color(255, 238, 238);
+				setForeground(new Color(205, 50, 50));
 			} else {
 				nen = ERR_BG;
 				setForeground(ERR_FG);
@@ -849,8 +852,7 @@ public class QuanLyPhuTungGUI extends JPanel {
 	private static class ThaoTacRenderer extends JPanel implements TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 		static final int NEN_XANH_NHAT = 0; // nút Xem
-		static final int NEN_VIEN = 1; // nút Sửa / In: nền trắng, viền xám
-		static final int NEN_DO_NHAT = 2; // nút Xóa
+		static final int NEN_VIEN = 1; // nút Sửa: nền trắng, viền xám
 
 		private final SlotIcon icon1, icon2;
 		private final int kieu1, kieu2;
@@ -894,7 +896,7 @@ public class QuanLyPhuTungGUI extends JPanel {
 				g2.setColor(new Color(175, 185, 200));
 				g2.drawRoundRect(x, y, NUT - 1, NUT - 1, 10, 10);
 			} else {
-				g2.setColor(kieu == NEN_DO_NHAT ? ERR_BG : PRIMARY_LIGHT);
+				g2.setColor(PRIMARY_LIGHT);
 				g2.fillRoundRect(x, y, NUT, NUT, 10, 10);
 			}
 		}

@@ -58,10 +58,8 @@ import javax.swing.table.TableCellRenderer;
  * Mỗi lần màn hình được mở, gọi {@link #datLai()} để về trạng thái ban đầu: 0 kết quả.
  * Kết quả chỉ hiện sau khi người dùng bấm "Tra cứu" (hoặc Enter) theo bộ lọc ở thẻ "Thông tin tra cứu".
  *
- * Bảng CSDL: PhieuNhapKho(maPNK, ngayNhap, maNVLap, maNCC, ghiChu, tongTienNhapKho)
- *            ChiTietPhieuNhapKho(maPNK, maPhuTung, soLuong, donGiaNhap).
- *
- * KHÔNG có dữ liệu mẫu. Các hàm có "TODO": timKiemPhieuNhapKho, layChiTietPhieuNhap.
+ * KHÔNG có dữ liệu mẫu và chưa gắn với CSDL cụ thể (sẽ cập nhật theo CSDL mới).
+ * Các hàm có "TODO": timKiemPhieuNhapKho, layChiTietPhieuNhap.
  */
 public class TraCuuPhieuNhapKhoGUI extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -83,7 +81,7 @@ public class TraCuuPhieuNhapKhoGUI extends JPanel {
 	private static final Border O_BANG = new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(236, 240, 245)),
 			new EmptyBorder(0, PAD_TRAI, 0, 8));
 
-	/** Một dòng phiếu nhập kho. TODO: có thể thay bằng entity.PhieuNhapKho (JOIN lấy thêm tên NV, tên NCC). */
+	/** Một dòng phiếu nhập kho. TODO: có thể thay bằng entity.PhieuNhapKho (sau khi có CSDL mới). */
 	private static class PhieuNhapRow {
 		final String ma, maNV, tenNV, maNCC, tenNCC, ghiChu;
 		final LocalDate ngayNhap;
@@ -189,8 +187,8 @@ public class TraCuuPhieuNhapKhoGUI extends JPanel {
 	 * @param denNgay   chỉ lấy phiếu có ngayNhap <= denNgay, tính đến hết ngày (null = không lọc)
 	 * @param maNVLap   mã nhân viên lập ("" = không lọc)
 	 * @param maNCC     mã nhà cung cấp ("" = không lọc)
-	 * TODO: gọi DAO (JOIN NhanVien, NhaCungCap để lấy hoTenNV, tenNCC) rồi đổi mỗi dòng thành
-	 * new PhieuNhapRow(maPNK, ngayNhap, maNV, hoTenNV, maNCC, tenNCC, ghiChu, tongTienNhapKho).
+	 * TODO: gọi DAO (lấy kèm tên nhân viên lập, tên nhà cung cấp) rồi đổi mỗi dòng thành
+	 * new PhieuNhapRow(maPhieu, ngayNhap, maNV, tenNV, maNCC, tenNCC, ghiChu, tongTien).
 	 */
 	private List<PhieuNhapRow> timKiemPhieuNhapKho(String maPNK, LocalDate tuNgay, LocalDate denNgay, String maNVLap,
 			String maNCC) {
@@ -200,7 +198,7 @@ public class TraCuuPhieuNhapKhoGUI extends JPanel {
 	}
 
 	/**
-	 * Lấy chi tiết của một phiếu (JOIN PhuTung để lấy tên, đơn vị tính).
+	 * Lấy chi tiết của một phiếu (kèm tên phụ tùng, đơn vị tính).
 	 * TODO: gọi DAO rồi ds.add(new ChiTietRow(maPhuTung, tenPhuTung, donViTinh, soLuong, donGiaNhap)).
 	 */
 	private List<ChiTietRow> layChiTietPhieuNhap(String maPNK) {

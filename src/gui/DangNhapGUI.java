@@ -50,8 +50,15 @@ public class DangNhapGUI extends JFrame {
 			e.printStackTrace();
 		}
     	setTitle("AutoCar PV - Đăng nhập");
+    	
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
+        
+        URL iconURL = getClass().getResource("/images/logo_app.png");
+        if (iconURL != null) {
+            ImageIcon icon = new ImageIcon(iconURL);
+            this.setIconImage(icon.getImage());
+        }
         initComponents();
     }
 
