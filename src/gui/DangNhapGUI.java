@@ -79,7 +79,7 @@ public class DangNhapGUI extends JFrame {
     	setContentPane(pnlNen);
 
         // ---------- Bên trái: logo + mô tả ----------
-        URL imgUrl = getClass().getResource("/images/logo-light-transparent.png");
+        URL imgUrl = getClass().getResource("/images/logo-3-primary.png");
         ImageIcon originalIcon = new ImageIcon(imgUrl);
 
         Image img = originalIcon.getImage();
@@ -92,7 +92,7 @@ public class DangNhapGUI extends JFrame {
         pnlNen.add(lblLogoImage);
 
         JLabel lblMoTa = new JLabel("Hệ thống quản lý gara ô tô", SwingConstants.CENTER);
-        lblMoTa.setFont(new Font(FONT_NAME, Font.PLAIN, 24));
+        lblMoTa.setFont(new Font(FONT_NAME, Font.BOLD, 24));
         lblMoTa.setForeground(Color.WHITE);
         lblMoTa.setBounds(27, 280, 432, 40);
         pnlNen.add(lblMoTa);
@@ -149,7 +149,7 @@ public class DangNhapGUI extends JFrame {
         // ---------- Chân trang ----------
         JLabel lblBanQuyen = new JLabel("© 2026 - Nhóm 5 - DHKTPM20_KSTN", SwingConstants.CENTER);
         lblBanQuyen.setFont(new Font(FONT_NAME, Font.PLAIN, 11));
-        lblBanQuyen.setForeground(new Color(200, 205, 225));
+        lblBanQuyen.setForeground(new Color(66, 69, 79));
         lblBanQuyen.setBounds(0, 515, 950, 20);
         pnlNen.add(lblBanQuyen);
 
