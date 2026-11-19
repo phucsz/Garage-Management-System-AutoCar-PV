@@ -14,6 +14,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 
+import entity.NhanVien;
+
 /**
  * ============================================================
  * TRANG CHỦ DÀNH CHO KỸ THUẬT VIÊN
@@ -77,6 +79,9 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
     private String vaiTro = "Kỹ thuật viên";
     private String ngaySinh = "15/09/2006";
     private String gioiTinh = "Nam";
+    
+    private final DanhSachCongViecGUI danhSachGUI;
+    private final TheoDoiCongViecGUI theoDoiGUI;
 
     // =========================================================
     // 5. THÀNH PHẦN GIAO DIỆN
@@ -91,18 +96,27 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
     // 6. CONSTRUCTOR
     // =========================================================
 
-    public TrangChuKyThuatVienGUI(String hoTen) {
+    public TrangChuKyThuatVienGUI(NhanVien nv) {
 
-        super(hoTen, "Kỹ thuật viên", MENU);
+        super(nv.getHoTenNV(), "Kỹ thuật viên", MENU);
 
-        tenKyThuatVien = hoTen;
+        tenKyThuatVien = nv.getHoTenNV();
 
         themCard(KEY_TRANG_CHU, taoTrangChu());
         
-        themCard(
-                KEY_DS_CONG_VIEC,
-                new DanhSachCongViecGUI()
-        );
+        theoDoiGUI = new TheoDoiCongViecGUI(() -> hienThi(KEY_DS_CONG_VIEC)); // nút "Danh sách công việc"
+        danhSachGUI = new DanhSachCongViecGUI(
+                () -> hienThi(KEY_TRANG_CHU),            // nút "Trang chủ kỹ thuật viên"
+                maPhieu -> {                             // nút "Theo dõi công việc"
+                    theoDoiGUI.napCongViec(maPhieu);
+                    hienThi(KEY_CONG_VIEC_PHU_TRACH);
+                },
+                null);                                   // nút "Lập phiếu sửa chữa" (chưa có màn hình đích)
+        danhSachGUI.setKyThuatVien(nv.getMaNV(), nv.getHoTenNV());
+        theoDoiGUI.setKyThuatVien(nv.getMaNV(), nv.getHoTenNV());
+
+        themCard(KEY_DS_CONG_VIEC, danhSachGUI);
+        themCard(KEY_CONG_VIEC_PHU_TRACH, theoDoiGUI);
         
         themCard(
                 KEY_CONG_VIEC_PHU_TRACH,
@@ -846,11 +860,11 @@ public class TrangChuKyThuatVienGUI extends TrangChuBaseGUI {
     // 21. MAIN
     // =========================================================
 
-    public static void main(String[] args) {
-
-        SwingUtilities.invokeLater(() -> {
-            TrangChuKyThuatVienGUI giaoDien = new TrangChuKyThuatVienGUI("Trần Minh");
-            giaoDien.setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//
+//        SwingUtilities.invokeLater(() -> {
+//            TrangChuKyThuatVienGUI giaoDien = new TrangChuKyThuatVienGUI("Trần Minh");
+//            giaoDien.setVisible(true);
+//        });
+//    }
 }

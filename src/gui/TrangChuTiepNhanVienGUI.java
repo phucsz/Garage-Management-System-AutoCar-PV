@@ -6,6 +6,8 @@ import java.sql.SQLException;
 
 import javax.swing.SwingUtilities;
 
+import entity.NhanVien;
+
 /**
  * Trang chủ dành cho vai trò TIẾP NHẬN VIÊN.
  * Menu chính: Trang chủ, Khách hàng & Xe, Tiếp nhận xe, Lập phiếu sửa chữa, Báo cáo thống kê.
@@ -40,11 +42,11 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 	private final TraCuuPhieuTiepNhanGUI traCuuGUI;
 	private final KhachHangVaXeGUI khachHangVaXeGUI;
 
-	public TrangChuTiepNhanVienGUI(String hoTen) throws SQLException {
-		super(hoTen, "Tiếp nhận viên", MENU);
+	public TrangChuTiepNhanVienGUI(NhanVien nv) throws SQLException {
+		super(nv.getHoTenNV(), "Tiếp nhận viên", MENU);
 
 		// Lập phiếu -> bấm "Tra cứu phiếu tiếp nhận" -> sang màn hình tra cứu (vẫn tô sáng nút "Tiếp Nhận Xe")
-		lapPhieuGUI = new LapPhieuTiepNhanGUI(hoTen, () -> hienThi(KEY_TRA_CUU_TIEP_NHAN, KEY_TIEP_NHAN));
+		lapPhieuGUI = new LapPhieuTiepNhanGUI(nv.getHoTenNV(), () -> hienThi(KEY_TRA_CUU_TIEP_NHAN, KEY_TIEP_NHAN));
 		traCuuGUI = new TraCuuPhieuTiepNhanGUI(() -> hienThi(KEY_TIEP_NHAN));
 		khachHangVaXeGUI = new KhachHangVaXeGUI(() -> hienThi(KEY_TRANG_CHU));
 
@@ -74,14 +76,14 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 		}
 	}
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			try {
-				new TrangChuTiepNhanVienGUI("Lê Thu Hà").setVisible(true);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
-	}
+//	public static void main(String[] args) {
+//		SwingUtilities.invokeLater(() -> {
+//			try {
+//				new TrangChuTiepNhanVienGUI("Lê Thu Hà").setVisible(true);
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		});
+//	}
 }

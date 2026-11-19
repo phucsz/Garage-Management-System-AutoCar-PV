@@ -4,6 +4,7 @@ import static gui.UITheme.*;
 
 import business.HoaDonBUS;
 import entity.HoaDon;
+import entity.NhanVien;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -103,11 +104,11 @@ public class TrangChuThuNganGUI extends TrangChuBaseGUI {
     // 6. CONSTRUCTOR
     // =========================================================
 
-    public TrangChuThuNganGUI(String hoTen) {
-        super(hoTen, "Thu ngân", MENU);
+    public TrangChuThuNganGUI(NhanVien nv) {
+        super(nv.getHoTenNV(), "Thu ngân", MENU);
 
-        if (hoTen != null && !hoTen.trim().isEmpty()) {
-            tenThuNgan = hoTen;
+        if (nv.getHoTenNV() != null && !nv.getHoTenNV().trim().isEmpty()) {
+            tenThuNgan = nv.getHoTenNV();
         }
 
         this.hoaDonBUS = new HoaDonBUS();
@@ -914,10 +915,10 @@ public class TrangChuThuNganGUI extends TrangChuBaseGUI {
     // 21. MAIN
     // =========================================================
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            TrangChuThuNganGUI giaoDien = new TrangChuThuNganGUI("Phạm Ngọc Anh");
-            giaoDien.setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            TrangChuThuNganGUI giaoDien = new TrangChuThuNganGUI("Phạm Ngọc Anh");
+//            giaoDien.setVisible(true);
+//        });
+//    }
 }

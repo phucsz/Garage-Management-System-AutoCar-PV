@@ -3,6 +3,8 @@ package gui;
 import static gui.UITheme.*;
 import javax.swing.SwingUtilities;
 
+import entity.NhanVien;
+
 /**
  * Trang chủ dành cho vai trò QUẢN LÝ.
  * Menu chính: Trang chủ, Quản lý phụ tùng, Quản lý dịch vụ, Nhân viên, Khuyến mãi, Báo cáo thống kê.
@@ -44,8 +46,8 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 	
 
 	
-	public TrangChuQuanLyGUI(String hoTen) {
-		super(hoTen, "Quản lý", MENU);
+	public TrangChuQuanLyGUI(NhanVien nv) {
+		super(nv.getHoTenNV(), "Quản lý", MENU);
 
 		// Màn hình đã làm xong thì đăng ký vào CardLayout; các mục còn lại tự có panel tạm.
 		nhanVienGUI = new NhanVienGUI(() -> hienThi(KEY_TRANG_CHU));
@@ -57,7 +59,7 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 		        () -> hienThi(KEY_TRA_CUU_PHIEU_NHAP_KHO, KEY_PHU_TUNG)); // Tra cứu phiếu nhập kho
 		nhapKhoGUI = new NhapKhoGUI(() -> hienThi(KEY_PHU_TUNG));       // nút "Quản lý kho"
 		traCuuPhieuNhapGUI = new TraCuuPhieuNhapKhoGUI(() -> hienThi(KEY_PHU_TUNG));
-		nhapKhoGUI.setNguoiLap("123", hoTen); // người lập phiếu (xem lưu ý bên dưới)
+		nhapKhoGUI.setNguoiLap(nv.getMaNV(), nv.getHoTenNV()); // người lập phiếu (xem lưu ý bên dưới)
 
 		themCard(KEY_PHU_TUNG, phuTungGUI);
 		themCard(KEY_NHAP_KHO, nhapKhoGUI);
@@ -89,7 +91,7 @@ public class TrangChuQuanLyGUI extends TrangChuBaseGUI {
 		}
 	}
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> new TrangChuQuanLyGUI("Nguyễn Văn A").setVisible(true));
-	}
+//	public static void main(String[] args) {
+//		SwingUtilities.invokeLater(() -> new TrangChuQuanLyGUI("Nguyễn Văn A").setVisible(true));
+//	}
 }

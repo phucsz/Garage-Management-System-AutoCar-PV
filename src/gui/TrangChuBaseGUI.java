@@ -40,6 +40,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import entity.NhanVien;
+
 /**
  * Lớp cha của 4 màn hình trang chủ theo vai trò (Quản lý, Tiếp nhận viên, Kỹ thuật viên, Thu ngân).
  *
@@ -385,16 +387,16 @@ public abstract class TrangChuBaseGUI extends JFrame implements ActionListener {
 	 * trong CSDL: "Quản lý", "Tiếp nhận viên", "Kỹ thuật viên", "Thu ngân".
 	 * @throws SQLException 
 	 */
-	public static TrangChuBaseGUI taoTheoVaiTro(String vaiTro, String hoTen) throws SQLException {
+	public static TrangChuBaseGUI taoTheoVaiTro(String vaiTro, NhanVien nv) throws SQLException {
 		switch (vaiTro) {
 		case "Quản lý":
-			return new TrangChuQuanLyGUI(hoTen);
+			return new TrangChuQuanLyGUI(nv);
 		case "Tiếp nhận viên":
-			return new TrangChuTiepNhanVienGUI(hoTen);
+			return new TrangChuTiepNhanVienGUI(nv);
 		case "Kỹ thuật viên":
-			return new TrangChuKyThuatVienGUI(hoTen);
+			return new TrangChuKyThuatVienGUI(nv);
 		case "Thu ngân":
-			return new TrangChuThuNganGUI(hoTen);
+			return new TrangChuThuNganGUI(nv);
 		default:
 			throw new IllegalArgumentException("Vai trò không hợp lệ: " + vaiTro);
 		}
