@@ -114,6 +114,12 @@ public class NhanVien {
 		this.trangThai = trangThai;
 	}
 	
+	public int getTuoi() {
+		int namHienTai = LocalDate.now().getYear();
+		int namSinh = this.getNgaySinh().getYear();
+		return namHienTai - namSinh;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%s %s %s %s %s %s %s %s %s %s",maNV,hoTenNV,noiSinh,ngaySinh,gioiTinh,cccd,sdt,diaChi,email,trangThai);

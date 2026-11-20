@@ -5,7 +5,9 @@ public class ChiTietPhuTung {
 	private PhuTung phuTung;
 	private int soLuong;
 	private double donGia;
-	private String ghiChu;
+	private double thueSuatVAT;
+	private int soLuongDaDung;
+	private int soLuongCapPhat;
 
 	public ChiTietPhuTung() {
 	}
@@ -15,12 +17,17 @@ public class ChiTietPhuTung {
 		this.phuTung = phuTung;
 	}
 
-	public ChiTietPhuTung(PhieuSuaChua phieuSuaChua, PhuTung phuTung, int soLuong, double donGia, String ghiChu) {
+	
+
+	public ChiTietPhuTung(PhieuSuaChua phieuSuaChua, PhuTung phuTung, int soLuong, double donGia, double thueSuatVAT,
+			int soLuongDaDung, int soLuongCapPhat) {
 		this.phieuSuaChua = phieuSuaChua;
 		this.phuTung = phuTung;
 		this.soLuong = soLuong;
 		this.donGia = donGia;
-		this.ghiChu = ghiChu;
+		this.thueSuatVAT = thueSuatVAT;
+		this.soLuongDaDung = soLuongDaDung;
+		this.soLuongCapPhat = soLuongCapPhat;
 	}
 
 	public PhieuSuaChua getPhieuSuaChua() { return phieuSuaChua; }
@@ -31,13 +38,29 @@ public class ChiTietPhuTung {
 	public void setSoLuong(int soLuong) { this.soLuong = soLuong; }
 	public double getDonGia() { return donGia; }
 	public void setDonGia(double donGia) { this.donGia = donGia; }
-	public String getGhiChu() { return ghiChu; }
-	public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
+	
 
-	@Override
-	public String toString() {
-		return String.format("%s %s %s %s %s",
-				phieuSuaChua == null ? null : phieuSuaChua.getMaPSC(),
-				phuTung == null ? null : phuTung.getMaPhuTung(), soLuong, donGia, ghiChu);
+	public double getThueSuatVAT() {
+		return thueSuatVAT;
+	}
+
+	public void setThueSuatVAT(double thueSuatVAT) {
+		this.thueSuatVAT = thueSuatVAT;
+	}
+
+	public int getSoLuongDaDung() {
+		return soLuongDaDung;
+	}
+
+	public void setSoLuongDaDung(int soLuongDaDung) {
+		this.soLuongDaDung = soLuongDaDung;
+	}
+
+	public int getSoLuongCapPhat() {
+		return soLuongCapPhat;
+	}
+
+	public void setSoLuongCapPhat(int soLuongCapPhat) {
+		this.soLuongCapPhat = soLuongCapPhat;
 	}
 }

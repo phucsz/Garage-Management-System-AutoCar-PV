@@ -12,11 +12,11 @@ import entity.DichVu;
 public class DichVuDAO {
 	public ArrayList<DichVu> getAll() throws SQLException {
 		ArrayList<DichVu> result = new ArrayList<>();
-		String sql = "SELECT maDichVu, tenDichVu, loaiDichVu, donGiaHienTai FROM DichVu ORDER BY tenDichVu";
+		String sql = "SELECT * FROM DichVu";
 		try (PreparedStatement stmt = connection().prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 			while (rs.next()) {
-				result.add(new DichVu(rs.getString("maDichVu"), rs.getString("tenDichVu"),
-						rs.getString("loaiDichVu"), rs.getDouble("donGiaHienTai")));
+				result.add(new DichVu(rs.getString(1), rs.getString(2),
+						rs.getString(3), rs.getDouble(4),rs.getDouble(5)));
 			}
 		}
 		return result;
@@ -25,7 +25,7 @@ public class DichVuDAO {
 	public ArrayList<DichVu> timKiem(String maDichVu, String loaiDichVu) throws SQLException {
 		ArrayList<DichVu> result = new ArrayList<>();
 		StringBuilder sql = new StringBuilder(
-				"SELECT maDichVu, tenDichVu, loaiDichVu, donGiaHienTai FROM DichVu WHERE maDichVu LIKE ?");
+				"SELECT * FROM DichVu WHERE maDichVu LIKE ?");
 		if (loaiDichVu != null && !loaiDichVu.trim().isEmpty()) {
 			sql.append(" AND loaiDichVu = ?");
 		}
@@ -38,8 +38,8 @@ public class DichVuDAO {
 			}
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
-					result.add(new DichVu(rs.getString("maDichVu"), rs.getString("tenDichVu"),
-							rs.getString("loaiDichVu"), rs.getDouble("donGiaHienTai")));
+					result.add(new DichVu(rs.getString(1), rs.getString(2),
+							rs.getString(3), rs.getDouble(4),rs.getDouble(5)));
 				}
 			}
 		}
@@ -69,7 +69,7 @@ public class DichVuDAO {
 	}
 
 	public boolean insert(DichVu value) throws SQLException {
-		String sql = "INSERT INTO DichVu(maDichVu, tenDichVu, loaiDichVu, donGiaHienTai) VALUES (?, ?, ?, ?)";
+		String sql = "INSERT INTO DichVu VALUES (?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = connection().prepareStatement(sql)) {
 			set(stmt, value);
 			return stmt.executeUpdate() == 1;
@@ -77,12 +77,12 @@ public class DichVuDAO {
 	}
 
 	public boolean update(DichVu value) throws SQLException {
-		String sql = "UPDATE DichVu SET tenDichVu=?, loaiDichVu=?, donGiaHienTai=? WHERE maDichVu=?";
+		String sql = "UPDATE DichVu SET tenDichVu=?, loaiDichVu=?, donGiaHienTai=? thueSuatVAT=? WHERE maDichVu=?";
 		try (PreparedStatement stmt = connection().prepareStatement(sql)) {
 			stmt.setString(1, value.getTenDichVu());
 			stmt.setString(2, value.getLoaiDichVu());
 			stmt.setDouble(3, value.getDonGiaHienTai());
-			stmt.setString(4, value.getMaDichVu());
+			stmt.setDouble(4, value.getThueSuatVAT());
 			return stmt.executeUpdate() == 1;
 		}
 	}
@@ -99,6 +99,7 @@ public class DichVuDAO {
 		stmt.setString(2, value.getTenDichVu());
 		stmt.setString(3, value.getLoaiDichVu());
 		stmt.setDouble(4, value.getDonGiaHienTai());
+		stmt.setDouble(5, value.getThueSuatVAT());
 	}
 
 	private Connection connection() throws SQLException {

@@ -23,15 +23,13 @@ public class XeDAO {
 	
 	public ArrayList<Xe> getXeTheoKhachHang(String maKH) throws SQLException {
 		ArrayList<Xe> ds = new ArrayList<>();
-		String sql = "SELECT bienSoXe, loaiXe, congSuat, hangXe, mauXe, soThangDaDi, soKmHienTai, maKH "
-				+ "FROM Xe WHERE maKH=? ORDER BY bienSoXe";
+		String sql = "SELECT x.*,ptn.maKH FROM Xe x join PhieuTiepNhan ptn on x.bienSoXe = ptn.bienSoXe where maKH = ?";
 		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
 			stmt.setString(1, maKH);
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
 					ds.add(new Xe(rs.getString("bienSoXe"), rs.getString("loaiXe"), nullableInt(rs, "congSuat"),
-							rs.getString("hangXe"), rs.getString("mauXe"), nullableInt(rs, "soThangDaDi"),
-							rs.getDouble("soKmHienTai"), new KhachHang(rs.getString("maKH"))));
+							rs.getString("hangXe"), rs.getString("mauXe"), nullableInt(rs, "soThangDaDi")));
 				}
 			}
 		}
@@ -39,23 +37,20 @@ public class XeDAO {
 	}
 
 	public boolean capNhatXe(Xe xe) throws SQLException {
-		String sql = "UPDATE Xe SET loaiXe=?, hangXe=?, mauXe=?, soThangDaDi=?, soKmHienTai=? "
-				+ "WHERE bienSoXe=? AND maKH=?";
+		String sql = "UPDATE Xe SET loaiXe=?, hangXe=?, mauXe=?, soThangDaDi=?"
+				+ "WHERE bienSoXe=?";
 		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
 			stmt.setString(1, xe.getLoaiXe());
 			stmt.setString(2, xe.getHangXe());
 			stmt.setString(3, xe.getMauXe());
 			stmt.setInt(4, xe.getSoThangDaDi());
-			stmt.setDouble(5, xe.getSoKmHienTai());
-			stmt.setString(6, xe.getBienSoXe());
-			stmt.setString(7, xe.getKhachHang().getMaKH());
+			stmt.setString(5, xe.getBienSoXe());
 			return stmt.executeUpdate() > 0;
 		}
 	}
 
 	public boolean themXe(Xe xe) throws SQLException {
-		String sql = "INSERT INTO Xe (bienSoXe, loaiXe, congSuat, hangXe, mauXe, soThangDaDi, soKmHienTai, maKH) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO Xe VALUES (?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
 			stmt.setString(1, xe.getBienSoXe());
 			stmt.setString(2, xe.getLoaiXe());
@@ -67,8 +62,6 @@ public class XeDAO {
 			stmt.setString(4, xe.getHangXe());
 			stmt.setString(5, xe.getMauXe());
 			stmt.setInt(6, xe.getSoThangDaDi());
-			stmt.setDouble(7, xe.getSoKmHienTai());
-			stmt.setString(8, xe.getKhachHang().getMaKH());
 			return stmt.executeUpdate() > 0;
 		}
 	}
@@ -85,10 +78,8 @@ public class XeDAO {
 			String hangXe = rs.getString(4);
 			String mauXe = rs.getString(5);
 			int soThangDaDi = rs.getInt(6);
-			double soKmHienTai = rs.getDouble(7);
-			KhachHang kh = new KhachHang(rs.getString(8));
 			
-			xe = new Xe(bienSo, loaiXe, congSuat, hangXe, mauXe, soThangDaDi, soKmHienTai, kh);
+			xe = new Xe(bienSo, loaiXe, congSuat, hangXe, mauXe, soThangDaDi);
 		}
 		return xe;
 	}

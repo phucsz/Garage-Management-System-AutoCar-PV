@@ -5,6 +5,7 @@ public class DichVu {
 	private String tenDichVu;
 	private String loaiDichVu;
 	private double donGiaHienTai;
+	private double thueSuatVAT;
 
 	public DichVu() {
 	}
@@ -13,11 +14,12 @@ public class DichVu {
 		this.maDichVu = maDichVu;
 	}
 
-	public DichVu(String maDichVu, String tenDichVu, String loaiDichVu, double donGiaHienTai) {
+	public DichVu(String maDichVu, String tenDichVu, String loaiDichVu, double donGiaHienTai,double thueSuatVAT) {
 		this.maDichVu = maDichVu;
 		this.tenDichVu = tenDichVu;
 		this.loaiDichVu = loaiDichVu;
 		this.donGiaHienTai = donGiaHienTai;
+		this.setThueSuatVAT(thueSuatVAT);
 	}
 
 	public String getMaDichVu() { return maDichVu; }
@@ -28,6 +30,13 @@ public class DichVu {
 	public void setLoaiDichVu(String loaiDichVu) { this.loaiDichVu = loaiDichVu; }
 	public double getDonGiaHienTai() { return donGiaHienTai; }
 	public void setDonGiaHienTai(double donGiaHienTai) { this.donGiaHienTai = donGiaHienTai; }
+	
+	public double getThueSuatVAT() {
+		return thueSuatVAT;
+	}
+	public void setThueSuatVAT(double thueSuatVAT) {
+		this.thueSuatVAT = thueSuatVAT;
+	}
 
 	@Override
 	public String toString() {

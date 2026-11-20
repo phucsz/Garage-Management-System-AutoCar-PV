@@ -8,7 +8,10 @@ public class PhieuTiepNhan {
 	private LocalDateTime ngayTiepNhan;
 	private String yeuCauKhachHang;
 	private double soKmDaDi;
+	private String trangThai;
 	private NhanVien nhanVienLapPhieu;
+	private NhanVien kyThuatVienPhuTrach;
+	private LocalDateTime ngayPhanCong;
 	private Xe xe;
 	private KhachHang khachHang;
 	private ArrayList<ChiTietHangMuc> chiTietHangMuc;
@@ -20,15 +23,22 @@ public class PhieuTiepNhan {
 		this.maPTN = maPTN;
 	}
 
+	
+
 	public PhieuTiepNhan(String maPTN, LocalDateTime ngayTiepNhan, String yeuCauKhachHang, double soKmDaDi,
-			NhanVien nhanVienLapPhieu, Xe xe, KhachHang khachHang) {
+			String trangThai, NhanVien nhanVienLapPhieu, NhanVien kyThuatVienPhuTrach, LocalDateTime ngayPhanCong,
+			Xe xe, KhachHang khachHang, ArrayList<ChiTietHangMuc> chiTietHangMuc) {
 		this.maPTN = maPTN;
 		this.ngayTiepNhan = ngayTiepNhan;
 		this.yeuCauKhachHang = yeuCauKhachHang;
 		this.soKmDaDi = soKmDaDi;
+		this.trangThai = trangThai;
 		this.nhanVienLapPhieu = nhanVienLapPhieu;
+		this.kyThuatVienPhuTrach = kyThuatVienPhuTrach;
+		this.ngayPhanCong = ngayPhanCong;
 		this.xe = xe;
 		this.khachHang = khachHang;
+		this.chiTietHangMuc = chiTietHangMuc;
 	}
 
 	public String getMaPTN() { return maPTN; }
@@ -45,7 +55,31 @@ public class PhieuTiepNhan {
 	public void setXe(Xe xe) { this.xe = xe; }
 	public KhachHang getKhachHang() { return khachHang; }
 	public void setKhachHang(KhachHang khachHang) { this.khachHang = khachHang; }
+
+	public String getTrangThai() {
+		return trangThai;
+	}
+
+	public void setTrangThai(String trangThai) {
+		this.trangThai = trangThai;
+	}
+
+	public NhanVien getKyThuatVienPhuTrach() {
+		return kyThuatVienPhuTrach;
+	}
+
+	public void setKyThuatVienPhuTrach(NhanVien kyThuatVienPhuTrach) {
+		this.kyThuatVienPhuTrach = kyThuatVienPhuTrach;
+	}
 	
+	public LocalDateTime getNgayPhanCong() {
+		return ngayPhanCong;
+	}
+
+	public void setNgayPhanCong(LocalDateTime ngayPhanCong) {
+		this.ngayPhanCong = ngayPhanCong;
+	}
+
 	public ArrayList<ChiTietHangMuc> getChiTietHangMuc() {
 		return chiTietHangMuc;
 	}
@@ -60,4 +94,6 @@ public class PhieuTiepNhan {
 				nhanVienLapPhieu == null ? null : nhanVienLapPhieu.getMaNV(),
 				xe == null ? null : xe.getBienSoXe(), khachHang == null ? null : khachHang.getMaKH());
 	}
+
+	
 }

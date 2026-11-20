@@ -118,7 +118,7 @@ public class PhieuTiepNhanDAO {
 						nv.setHoTenNV(rs.getString("hoTenNV"));
 						ds.add(new PhieuTiepNhan(rs.getString("maPTN"),
 								rs.getTimestamp("ngayTiepNhan").toLocalDateTime(),
-								rs.getString("yeuCauKhachHang"), rs.getDouble("soKmDaDi"), nv, xe, kh));
+								rs.getString("yeuCauKhachHang"), rs.getDouble("soKmDaDi")));
 					}
 				}
 			}

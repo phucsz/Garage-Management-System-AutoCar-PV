@@ -1,14 +1,16 @@
 package entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
 
 public class PhieuNhapKho {
 	private String maPNK;
-	private LocalDateTime ngayNhap;
-	private NhanVien nhanVienLap;
+	private LocalDate ngayNhap;
+	private NhanVien nhanVienLapPhieu;
 	private NhaCungCap nhaCungCap;
 	private String ghiChu;
-	private double tongTienNhapKho;
+	private ArrayList<LoPhuTung> chiTietNhapKho;
 
 	public PhieuNhapKho() {
 	}
@@ -17,33 +19,39 @@ public class PhieuNhapKho {
 		this.maPNK = maPNK;
 	}
 
-	public PhieuNhapKho(String maPNK, LocalDateTime ngayNhap, NhanVien nhanVienLap, NhaCungCap nhaCungCap,
-			String ghiChu, double tongTienNhapKho) {
+	public PhieuNhapKho(String maPNK, LocalDate ngayNhap, NhanVien nhanVienLapPhieu, NhaCungCap nhaCungCap,
+			String ghiChu, ArrayList<LoPhuTung> chiTietNhapKho) {
 		this.maPNK = maPNK;
 		this.ngayNhap = ngayNhap;
-		this.nhanVienLap = nhanVienLap;
+		this.nhanVienLapPhieu = nhanVienLapPhieu;
 		this.nhaCungCap = nhaCungCap;
 		this.ghiChu = ghiChu;
-		this.tongTienNhapKho = tongTienNhapKho;
+		this.chiTietNhapKho = chiTietNhapKho;
 	}
 
 	public String getMaPNK() { return maPNK; }
 	public void setMaPNK(String maPNK) { this.maPNK = maPNK; }
-	public LocalDateTime getNgayNhap() { return ngayNhap; }
-	public void setNgayNhap(LocalDateTime ngayNhap) { this.ngayNhap = ngayNhap; }
-	public NhanVien getNhanVienLap() { return nhanVienLap; }
-	public void setNhanVienLap(NhanVien nhanVienLap) { this.nhanVienLap = nhanVienLap; }
+	public LocalDate getNgayNhap() { return ngayNhap; }
+	public void setNgayNhap(LocalDate ngayNhap) { this.ngayNhap = ngayNhap; }
 	public NhaCungCap getNhaCungCap() { return nhaCungCap; }
 	public void setNhaCungCap(NhaCungCap nhaCungCap) { this.nhaCungCap = nhaCungCap; }
 	public String getGhiChu() { return ghiChu; }
 	public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
-	public double getTongTienNhapKho() { return tongTienNhapKho; }
-	public void setTongTienNhapKho(double tongTienNhapKho) { this.tongTienNhapKho = tongTienNhapKho; }
 
-	@Override
-	public String toString() {
-		return String.format("%s %s %s %s %s %s", maPNK, ngayNhap,
-				nhanVienLap == null ? null : nhanVienLap.getMaNV(),
-				nhaCungCap == null ? null : nhaCungCap.getMaNCC(), ghiChu, tongTienNhapKho);
+	public NhanVien getNhanVienLapPhieu() {
+		return nhanVienLapPhieu;
 	}
+
+	public void setNhanVienLapPhieu(NhanVien nhanVienLapPhieu) {
+		this.nhanVienLapPhieu = nhanVienLapPhieu;
+	}
+
+	public ArrayList<LoPhuTung> getChiTietNhapKho() {
+		return chiTietNhapKho;
+	}
+
+	public void setChiTietNhapKho(ArrayList<LoPhuTung> chiTietNhapKho) {
+		this.chiTietNhapKho = chiTietNhapKho;
+	}
+		
 }

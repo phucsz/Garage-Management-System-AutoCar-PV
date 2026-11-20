@@ -1,17 +1,17 @@
 package entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class PhieuSuaChua {
 	private String maPSC;
 	private LocalDateTime ngayLapPhieu;
 	private String trangThai;
 	private PhieuTiepNhan phieuTiepNhan;
-	private NhanVien nhanVienLapPhieu;
 	private NhanVien nhanVienPhuTrach;
-	private double tongTienDichVu;
-	private double tongTienPhuTung;
-	private double tongChiPhiDuKien;
+	private ArrayList<ChiTietPhuTung> chiTietPhuTung;
+	private ArrayList<ChiTietDichVu> chiTietDichVu;
+	
 
 	public PhieuSuaChua() {
 	}
@@ -20,18 +20,18 @@ public class PhieuSuaChua {
 		this.maPSC = maPSC;
 	}
 
+
 	public PhieuSuaChua(String maPSC, LocalDateTime ngayLapPhieu, String trangThai, PhieuTiepNhan phieuTiepNhan,
-			NhanVien nhanVienLapPhieu, NhanVien nhanVienPhuTrach, double tongTienDichVu, double tongTienPhuTung,
-			double tongChiPhiDuKien) {
+			NhanVien nhanVienPhuTrach, ArrayList<ChiTietPhuTung> chiTietPhuTung,
+			ArrayList<ChiTietDichVu> chiTietDichVu) {
+		super();
 		this.maPSC = maPSC;
 		this.ngayLapPhieu = ngayLapPhieu;
 		this.trangThai = trangThai;
 		this.phieuTiepNhan = phieuTiepNhan;
-		this.nhanVienLapPhieu = nhanVienLapPhieu;
 		this.nhanVienPhuTrach = nhanVienPhuTrach;
-		this.tongTienDichVu = tongTienDichVu;
-		this.tongTienPhuTung = tongTienPhuTung;
-		this.tongChiPhiDuKien = tongChiPhiDuKien;
+		setChiTietPhuTung(chiTietPhuTung);
+		setChiTietDichVu(chiTietDichVu);
 	}
 
 	public String getMaPSC() { return maPSC; }
@@ -42,24 +42,25 @@ public class PhieuSuaChua {
 	public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 	public PhieuTiepNhan getPhieuTiepNhan() { return phieuTiepNhan; }
 	public void setPhieuTiepNhan(PhieuTiepNhan phieuTiepNhan) { this.phieuTiepNhan = phieuTiepNhan; }
-	public NhanVien getNhanVienLapPhieu() { return nhanVienLapPhieu; }
-	public void setNhanVienLapPhieu(NhanVien nhanVienLapPhieu) { this.nhanVienLapPhieu = nhanVienLapPhieu; }
 	public NhanVien getNhanVienPhuTrach() { return nhanVienPhuTrach; }
 	public void setNhanVienPhuTrach(NhanVien nhanVienPhuTrach) { this.nhanVienPhuTrach = nhanVienPhuTrach; }
-	public double getTongTienDichVu() { return tongTienDichVu; }
-	public void setTongTienDichVu(double tongTienDichVu) { this.tongTienDichVu = tongTienDichVu; }
-	public double getTongTienPhuTung() { return tongTienPhuTung; }
-	public void setTongTienPhuTung(double tongTienPhuTung) { this.tongTienPhuTung = tongTienPhuTung; }
-	public double getTongChiPhiDuKien() { return tongChiPhiDuKien; }
-	public void setTongChiPhiDuKien(double tongChiPhiDuKien) { this.tongChiPhiDuKien = tongChiPhiDuKien; }
 
-	@Override
-	public String toString() {
-		return String.format("%s %s %s %s %s %s %s %s %s",
-				maPSC, ngayLapPhieu, trangThai,
-				phieuTiepNhan == null ? null : phieuTiepNhan.getMaPTN(),
-				nhanVienLapPhieu == null ? null : nhanVienLapPhieu.getMaNV(),
-				nhanVienPhuTrach == null ? null : nhanVienPhuTrach.getMaNV(),
-				tongTienDichVu, tongTienPhuTung, tongChiPhiDuKien);
+
+	
+
+	public ArrayList<ChiTietPhuTung> getChiTietPhuTung() {
+		return chiTietPhuTung;
+	}
+
+	public void setChiTietPhuTung(ArrayList<ChiTietPhuTung> chiTietPhuTung) {
+		this.chiTietPhuTung = chiTietPhuTung;
+	}
+
+	public ArrayList<ChiTietDichVu> getChiTietDichVu() {
+		return chiTietDichVu;
+	}
+
+	public void setChiTietDichVu(ArrayList<ChiTietDichVu> chiTietDichVu) {
+		this.chiTietDichVu = chiTietDichVu;
 	}
 }

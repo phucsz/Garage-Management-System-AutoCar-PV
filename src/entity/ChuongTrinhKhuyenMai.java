@@ -19,12 +19,12 @@ public class ChuongTrinhKhuyenMai {
 
 	public ChuongTrinhKhuyenMai(String maChuongTrinh, String tenChuongTrinh, LocalDate ngayBatDau,
 			LocalDate ngayKetThuc, String loaiKhuyenMai, double giaTriKhuyenMai) {
-		this.maChuongTrinh = maChuongTrinh;
-		this.tenChuongTrinh = tenChuongTrinh;
-		this.ngayBatDau = ngayBatDau;
-		this.ngayKetThuc = ngayKetThuc;
-		this.loaiKhuyenMai = loaiKhuyenMai;
-		this.giaTriKhuyenMai = giaTriKhuyenMai;
+		setMaChuongTrinh(maChuongTrinh);
+		setTenChuongTrinh(tenChuongTrinh);
+		setNgayBatDau(ngayBatDau);
+		setNgayKetThuc(ngayKetThuc);
+		setLoaiKhuyenMai(loaiKhuyenMai);
+		setGiaTriKhuyenMai(giaTriKhuyenMai);
 	}
 
 	public String getMaChuongTrinh() { return maChuongTrinh; }
@@ -38,8 +38,26 @@ public class ChuongTrinhKhuyenMai {
 	public String getLoaiKhuyenMai() { return loaiKhuyenMai; }
 	public void setLoaiKhuyenMai(String loaiKhuyenMai) { this.loaiKhuyenMai = loaiKhuyenMai; }
 	public double getGiaTriKhuyenMai() { return giaTriKhuyenMai; }
-	public void setGiaTriKhuyenMai(double giaTriKhuyenMai) { this.giaTriKhuyenMai = giaTriKhuyenMai; }
+	
+	public void setGiaTriKhuyenMai(double giaTriKhuyenMai) {
+	    if (giaTriKhuyenMai < 0) {
+	        throw new IllegalArgumentException("Lỗi: Giá trị khuyến mãi không được nhỏ hơn 0");
+	    }
+	    if (this.getLoaiKhuyenMai().equals("Phần trăm")) {
+	        if (giaTriKhuyenMai > 100) {
+	            throw new IllegalArgumentException("Lỗi: Khuyến mãi theo phần trăm không được vượt quá 100%");
+	        }
+	    }
+	    this.giaTriKhuyenMai = giaTriKhuyenMai;
+	}
 
+
+	public String KiemTraTrangThai() {
+		LocalDate ngayHienTai = LocalDate.now();
+		if (ngayHienTai.isAfter(ngayBatDau) && ngayHienTai.isBefore(ngayKetThuc)) return "Đang diễn ra";
+		else if (ngayHienTai.isBefore(ngayBatDau)) return "Chưa bắt đầu";
+		return "Đã kết thúc";
+	}
 	@Override
 	public String toString() {
 		return String.format("%s %s %s %s %s %s", maChuongTrinh, tenChuongTrinh, ngayBatDau, ngayKetThuc,

@@ -1,16 +1,15 @@
 package entity;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class PhuTung {
 	private String maPhuTung;
 	private String tenPhuTung;
-	private DanhMucPhuTung danhMucPhuTung;
 	private String donViTinh;
 	private double donGiaHienTai;
-	private int soLuongTon;
-	private LocalDate ngaySanXuat;
-	private NhaCungCap nhaCungCap;
+	private double thueSuatVAT;
+	private DanhMucPhuTung danhMucPhuTung;
+	private ArrayList<LoPhuTung> loPhuTung;
 
 	public PhuTung() {
 	}
@@ -19,16 +18,17 @@ public class PhuTung {
 		this.maPhuTung = maPhuTung;
 	}
 
-	public PhuTung(String maPhuTung, String tenPhuTung, DanhMucPhuTung danhMucPhuTung, String donViTinh,
-			double donGiaHienTai, int soLuongTon, LocalDate ngaySanXuat, NhaCungCap nhaCungCap) {
+	
+
+	public PhuTung(String maPhuTung, String tenPhuTung, String donViTinh, double donGiaHienTai, double thueSuatVAT,
+			DanhMucPhuTung danhMucPhuTung, ArrayList<LoPhuTung> loPhuTung) {
 		this.maPhuTung = maPhuTung;
 		this.tenPhuTung = tenPhuTung;
-		this.danhMucPhuTung = danhMucPhuTung;
 		this.donViTinh = donViTinh;
 		this.donGiaHienTai = donGiaHienTai;
-		this.soLuongTon = soLuongTon;
-		this.ngaySanXuat = ngaySanXuat;
-		this.nhaCungCap = nhaCungCap;
+		this.thueSuatVAT = thueSuatVAT;
+		this.danhMucPhuTung = danhMucPhuTung;
+		this.loPhuTung = loPhuTung;
 	}
 
 	public String getMaPhuTung() { return maPhuTung; }
@@ -41,17 +41,21 @@ public class PhuTung {
 	public void setDonViTinh(String donViTinh) { this.donViTinh = donViTinh; }
 	public double getDonGiaHienTai() { return donGiaHienTai; }
 	public void setDonGiaHienTai(double donGiaHienTai) { this.donGiaHienTai = donGiaHienTai; }
-	public int getSoLuongTon() { return soLuongTon; }
-	public void setSoLuongTon(int soLuongTon) { this.soLuongTon = soLuongTon; }
-	public LocalDate getNgaySanXuat() { return ngaySanXuat; }
-	public void setNgaySanXuat(LocalDate ngaySanXuat) { this.ngaySanXuat = ngaySanXuat; }
-	public NhaCungCap getNhaCungCap() { return nhaCungCap; }
-	public void setNhaCungCap(NhaCungCap nhaCungCap) { this.nhaCungCap = nhaCungCap; }
 
-	@Override
-	public String toString() {
-		return String.format("%s %s %s %s %s %s %s %s", maPhuTung, tenPhuTung,
-				danhMucPhuTung == null ? null : danhMucPhuTung.getMaDanhMuc(), donViTinh, donGiaHienTai,
-				soLuongTon, ngaySanXuat, nhaCungCap == null ? null : nhaCungCap.getMaNCC());
+	public double getThueSuatVAT() {
+		return thueSuatVAT;
 	}
+
+	public void setThueSuatVAT(double thueSuatVAT) {
+		this.thueSuatVAT = thueSuatVAT;
+	}
+
+	public ArrayList<LoPhuTung> getLoPhuTung() {
+		return loPhuTung;
+	}
+
+	public void setLoPhuTung(ArrayList<LoPhuTung> loPhuTung) {
+		this.loPhuTung = loPhuTung;
+	}
+	
 }
