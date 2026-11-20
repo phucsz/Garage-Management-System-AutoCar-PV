@@ -67,6 +67,7 @@ public class PhieuTiepNhanDAO {
 			ArrayList<PhieuTiepNhan> ds = new ArrayList<>();
 			StringBuilder sql = new StringBuilder(
 					"SELECT p.maPTN, p.ngayTiepNhan, p.yeuCauKhachHang, p.soKmDaDi, "
+					+ "p.trangThai, "
 					+ "kh.maKH, kh.hoTenKH, kh.sdt, kh.diaChi, "
 					+ "x.bienSoXe, x.hangXe, nv.maNV, nv.hoTenNV "
 					+ "FROM PhieuTiepNhan p "
@@ -118,7 +119,9 @@ public class PhieuTiepNhanDAO {
 						nv.setHoTenNV(rs.getString("hoTenNV"));
 						ds.add(new PhieuTiepNhan(rs.getString("maPTN"),
 								rs.getTimestamp("ngayTiepNhan").toLocalDateTime(),
-								rs.getString("yeuCauKhachHang"), rs.getDouble("soKmDaDi")));
+								rs.getString("yeuCauKhachHang"), rs.getDouble("soKmDaDi"),
+								rs.getString("trangThai"), nv, null, null, xe, kh,
+								new ArrayList<>()));
 					}
 				}
 			}

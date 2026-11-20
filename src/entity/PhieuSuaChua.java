@@ -63,4 +63,30 @@ public class PhieuSuaChua {
 	public void setChiTietDichVu(ArrayList<ChiTietDichVu> chiTietDichVu) {
 		this.chiTietDichVu = chiTietDichVu;
 	}
+
+	public double getTongTienDichVu() {
+		if (chiTietDichVu == null) {
+			return 0;
+		}
+		double tong = 0;
+		for (ChiTietDichVu chiTiet : chiTietDichVu) {
+			if (chiTiet != null) {
+				tong += Math.max(0, chiTiet.getSoLuong()) * Math.max(0, chiTiet.getDonGia());
+			}
+		}
+		return tong;
+	}
+
+	public double getTongTienPhuTung() {
+		if (chiTietPhuTung == null) {
+			return 0;
+		}
+		double tong = 0;
+		for (ChiTietPhuTung chiTiet : chiTietPhuTung) {
+			if (chiTiet != null) {
+				tong += Math.max(0, chiTiet.getSoLuong()) * Math.max(0, chiTiet.getDonGia());
+			}
+		}
+		return tong;
+	}
 }

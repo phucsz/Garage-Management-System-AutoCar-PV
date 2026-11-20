@@ -93,7 +93,7 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 	 * @param moTraCuu      hành động chuyển sang màn hình Tra cứu phiếu tiếp nhận
 	 * @throws SQLException 
 	 */
-	public LapPhieuTiepNhanGUI(String nguoiTiepNhan, Runnable moTraCuu) throws SQLException {	
+	public LapPhieuTiepNhanGUI(NhanVien nv, Runnable moTraCuu) throws SQLException {	
 		this.moTraCuu = moTraCuu;
 		ConnectDB.getInstance().connect();
 		ptn_bus = new LapPhieuTiepNhanBUS();
@@ -112,7 +112,7 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		sp.getVerticalScrollBar().setUnitIncrement(16);
 		add(sp, BorderLayout.CENTER);
 
-		txtTiepNhanVien.setText(nguoiTiepNhan);
+		txtTiepNhanVien.setText(nv.getMaNV());
 		refresh();
 	}
 
@@ -579,7 +579,7 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 
 	private JPanel taoPhanKyThuatVien() {
 		txtTiepNhanVien = new Input(null, true);
-		return labeled("Nhân viên tiếp nhận", txtTiepNhanVien);
+		return labeled("Mã nhân viên tiếp nhận", txtTiepNhanVien);
 	}
 
 	private JPanel taoPhanNut() {
@@ -695,7 +695,8 @@ public class LapPhieuTiepNhanGUI extends JPanel {
 		double soKm = Double.parseDouble(soKmText);
 		String maPhieu = txtMaPhieu.getText().trim();
 		PhieuTiepNhan phieu = new PhieuTiepNhan(maPhieu, LocalDateTime.now(), txtYeuCau.getText().trim(), soKm,
-				new NhanVien(txtTiepNhanVien.getText().trim()), new Xe(bienSo), new KhachHang());
+				"Chờ phân công", new NhanVien(txtTiepNhanVien.getText().trim()), null, null,
+				new Xe(bienSo), new KhachHang(), new ArrayList<>());
 		phieu.setChiTietHangMuc(new ArrayList<>());
 		themChiTietTuBang(phieu, modelNoiThat);
 		themChiTietTuBang(phieu, modelNgoaiThat);

@@ -95,5 +95,8 @@ public class LoPhuTung {
 		this.phieuNhapKho = phieuNhapKho;
 	}
 	
+	public double tinhThanhTien() {
+		return Math.max(0, soLuongNhap) * Math.max(0, donGiaNhap);
+	}
 	
 }

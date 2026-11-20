@@ -81,32 +81,32 @@ public class HoaDon {
 		this.chuongTrinhKhuyenMai = chuongTrinhKhuyenMai;
 	}
 	
-		
-//	public double getTienGiamGia() {
-//		return chuongTrinhKhuyenMai == null ? 0 : chuongTrinhKhuyenMai.getGiaTriKhuyenMai();
-//	}
 
-//	public double getSoTienGiamGia() {
-//		double tongTienTruocGiam = getTongTienTruocGiam();
-//		if (chuongTrinhKhuyenMai == null) {
-//			return 0;
-//		}
-//		if ("Phần trăm".equalsIgnoreCase(chuongTrinhKhuyenMai.getLoaiKhuyenMai())) {
-//			return tongTienTruocGiam * getTienGiamGia() / 100;
-//		}
-//		return Math.min(tongTienTruocGiam, Math.max(0, getTienGiamGia()));
-//	}
+	public double getTienGiamGia() {
+		return chuongTrinhKhuyenMai == null ? 0 : chuongTrinhKhuyenMai.getGiaTriKhuyenMai();
+	}
 
-//	public double getTongTienThanhToan() {
-//		return Math.max(0, getTongTienTruocGiam() - getSoTienGiamGia());
-//	}
+	public double getSoTienGiamGia() {
+		if (chuongTrinhKhuyenMai == null) {
+			return 0;
+		}
+		double tongTienTruocGiam = getTongTienTruocGiam();
+		if ("Phần trăm".equalsIgnoreCase(chuongTrinhKhuyenMai.getLoaiKhuyenMai())) {
+			return tongTienTruocGiam * Math.max(0, getTienGiamGia()) / 100;
+		}
+		return Math.min(tongTienTruocGiam, Math.max(0, getTienGiamGia()));
+	}
 
-//	private double getTongTienTruocGiam() {
-//		if (phieuSuaChua == null) {
-//			return 0;
-//		}
-//		return Math.max(0, phieuSuaChua.getTongTienDichVu())
-//				+ Math.max(0, phieuSuaChua.getTongTienPhuTung());
-//	}
+	public double getTongTienThanhToan() {
+		return Math.max(0, getTongTienTruocGiam() - getSoTienGiamGia());
+	}
+
+	private double getTongTienTruocGiam() {
+		if (phieuSuaChua == null) {
+			return 0;
+		}
+		return Math.max(0, phieuSuaChua.getTongTienDichVu())
+				+ Math.max(0, phieuSuaChua.getTongTienPhuTung());
+	}
 
 }

@@ -21,6 +21,7 @@ import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+
+import business.PhuTungBUS;
+import entity.DanhMucPhuTung;
+import entity.PhuTung;
 
 /**
  * Màn hình QUẢN LÝ PHỤ TÙNG (JPanel) - được nhúng vào CardLayout của TrangChuQuanLyGUI.
@@ -132,6 +137,7 @@ public class QuanLyPhuTungGUI extends JPanel {
 	}
 
 	private final Runnable quayVeTrangChu, moNhapKho, moTraCuuPhieuNhap;
+	private final PhuTungBUS phuTungBUS = new PhuTungBUS();
 	private final List<PhuTungRow> dsPhuTung = new ArrayList<>(); // kết quả sau khi lọc (chia trang ở UI)
 	private final List<MucChon> dsDanhMuc = new ArrayList<>();
 	private int trang = 1;
@@ -204,7 +210,18 @@ public class QuanLyPhuTungGUI extends JPanel {
 	 */
 	private List<PhuTungRow> layDanhSachPhuTung(String tuKhoa, String maDanhMuc) {
 		List<PhuTungRow> ds = new ArrayList<>();
-		// TODO: ds.add(new PhuTungRow(...));
+		try {
+			for (PhuTung p : phuTungBUS.timKiem(tuKhoa, maDanhMuc)) {
+				String maNhom = p.getDanhMucPhuTung() == null ? null : p.getDanhMucPhuTung().getMaDanhMuc();
+				String tenNhom = p.getDanhMucPhuTung() == null ? "" : p.getDanhMucPhuTung().getTenDanhMuc();
+				int soLo = p.getLoPhuTung() == null ? 0 : p.getLoPhuTung().size();
+				ds.add(new PhuTungRow(p.getMaPhuTung(), p.getTenPhuTung(), maNhom, tenNhom,
+						p.getDonViTinh(), p.tinhSoLuongTon(), 0, soLo, p.getDonGiaHienTai()));
+			}
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(this, "Không thể tải danh sách phụ tùng: " + e.getMessage(),
+					"Lỗi", JOptionPane.ERROR_MESSAGE);
+		}
 		return ds;
 	}
 
@@ -214,7 +231,14 @@ public class QuanLyPhuTungGUI extends JPanel {
 	 */
 	private List<MucChon> layDanhSachDanhMuc() {
 		List<MucChon> ds = new ArrayList<>();
-		// TODO: ds.add(new MucChon(...));
+		try {
+			for (DanhMucPhuTung dm : phuTungBUS.layDanhSachDanhMuc()) {
+				ds.add(new MucChon(dm.getMaDanhMuc(), dm.getTenDanhMuc()));
+			}
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(this, "Không thể tải danh sách loại phụ tùng: " + e.getMessage(),
+					"Lỗi", JOptionPane.ERROR_MESSAGE);
+		}
 		return ds;
 	}
 
@@ -224,8 +248,16 @@ public class QuanLyPhuTungGUI extends JPanel {
 	 * @return true nếu cập nhật thành công
 	 */
 	private boolean capNhatPhuTung(PhuTungRow pt) {
-		// TODO: return phuTungDAO.capNhat(...);
-		return false;
+		DanhMucPhuTung danhMuc = pt.maDanhMuc == null ? null
+				: new DanhMucPhuTung(pt.maDanhMuc, pt.tenDanhMuc);
+		PhuTung entity = new PhuTung(pt.ma, pt.ten, pt.donViTinh, pt.donGia, 0, danhMuc, null);
+		try {
+			return phuTungBUS.capNhat(entity);
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(this, "Không thể cập nhật phụ tùng: " + e.getMessage(),
+					"Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
 	}
 
 	// =====================================================================

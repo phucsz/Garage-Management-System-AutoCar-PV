@@ -101,9 +101,10 @@ public class KhachHangVaXeGUI extends JPanel {
 
 	private static class XeRow {
 		final String bienSo, loaiXe, mauXe, hang;
-		final int soThangDaDi, soKm;
+		final int soThangDaDi;
+		final Integer soKm;
 
-		XeRow(String bienSo, String loaiXe, String mauXe, String hang, int soThangDaDi, int soKm) {
+		XeRow(String bienSo, String loaiXe, String mauXe, String hang, int soThangDaDi, Integer soKm) {
 			this.bienSo = bienSo;
 			this.loaiXe = loaiXe;
 			this.mauXe = mauXe;
@@ -229,7 +230,7 @@ public class KhachHangVaXeGUI extends JPanel {
 		try {
 			for (Xe x : khachHangVaXeBUS.getXeTheoKhachHang(maKhachHang)) {
 				ds.add(new XeRow(x.getBienSoXe(), x.getLoaiXe(), x.getMauXe(), x.getHangXe(),
-						x.getSoThangDaDi(), (int) x.getSoKmHienTai()));
+						x.getSoThangDaDi(), khachHangVaXeBUS.laySoKmGanNhat(x.getBienSoXe())));
 			}
 		} catch (SQLException e) {
 			baoLoiCSDL("Không thể tải danh sách xe của khách hàng.", e);
@@ -273,8 +274,7 @@ public class KhachHangVaXeGUI extends JPanel {
 		if (khachHangVaXeBUS == null) {
 			return false;
 		}
-		Xe entity = new Xe(xe.bienSo, xe.loaiXe, 0, xe.hang, xe.mauXe, xe.soThangDaDi, xe.soKm,
-				new KhachHang(maKhachHang));
+		Xe entity = new Xe(xe.bienSo, xe.loaiXe, 0, xe.hang, xe.mauXe, xe.soThangDaDi);
 		try {
 			return khachHangVaXeBUS.capNhatXe(entity);
 		} catch (SQLException e) {
@@ -657,7 +657,8 @@ public class KhachHangVaXeGUI extends JPanel {
 	private void hienThiXe() {
 		modelXe.setRowCount(0);
 		for (XeRow x : dsXe) {
-			modelXe.addRow(new Object[] { x.bienSo, x.loaiXe, x.mauXe, x.hang, x.soThangDaDi, FMT_SO.format(x.soKm),
+			modelXe.addRow(new Object[] { x.bienSo, x.loaiXe, x.mauXe, x.hang, x.soThangDaDi,
+					x.soKm == null ? "-" : FMT_SO.format(x.soKm),
 					TXT_XE });
 		}
 		datChieuCao(spXe, dsXe.size(), SO_DONG_XE_TOI_DA);
@@ -756,7 +757,8 @@ public class KhachHangVaXeGUI extends JPanel {
 	private void xemXe(XeRow x) {
 		JOptionPane.showMessageDialog(this,
 				"Biển số: " + x.bienSo + "\nLoại xe: " + x.loaiXe + "\nMàu xe: " + x.mauXe + "\nHãng: " + x.hang
-						+ "\nSố tháng đã đi: " + x.soThangDaDi + "\nSố km: " + FMT_SO.format(x.soKm),
+						+ "\nSố tháng đã đi: " + x.soThangDaDi + "\nSố km: "
+						+ (x.soKm == null ? "-" : FMT_SO.format(x.soKm)),
 				"Thông tin xe", JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -767,8 +769,8 @@ public class KhachHangVaXeGUI extends JPanel {
 		String[] kq = hienFormDialog("Sửa thông tin xe",
 				new String[] { "Biển số", "Loại xe *", "Màu xe", "Hãng *", "Số tháng đã đi", "Số km" },
 				new String[] { x.bienSo, x.loaiXe, x.mauXe, x.hang, String.valueOf(x.soThangDaDi),
-						String.valueOf(x.soKm) },
-				new boolean[] { true, false, false, false, false, false }, v -> {
+						x.soKm == null ? "" : String.valueOf(x.soKm) },
+				new boolean[] { true, false, false, false, false, true }, v -> {
 					if (v[1].isEmpty()) {
 						return "Vui lòng nhập loại xe!";
 					}

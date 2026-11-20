@@ -62,17 +62,14 @@ public class LapPhieuTiepNhanBUS {
 
 			Xe xe = xe_dao.timTheoBienSo(ptn.getXe().getBienSoXe());
 			if (xe == null) {
-				xe = new Xe(ptn.getXe().getBienSoXe(), null, 0, hangXe, null, 0, ptn.getSoKmDaDi(), kh);
+				xe = new Xe(ptn.getXe().getBienSoXe(), null, 0, hangXe, null, 0);
 				if (!xe_dao.themXe(xe)) {
 					con.rollback();
 					return false;
 				}
-			} else if (xe.getKhachHang() == null
-					|| !kh.getMaKH().equals(xe.getKhachHang().getMaKH())) {
-				throw new SQLException("Biển số xe đã thuộc về một khách hàng khác.");
 			}
 
-			NhanVien nhanVien = nv_dao.timTheoHoTen(ptn.getNhanVienLapPhieu().getMaNV());
+			NhanVien nhanVien = nv_dao.getNVTheoMa(ptn.getNhanVienLapPhieu().getMaNV());
 			if (nhanVien == null) {
 				throw new SQLException("Không tìm thấy nhân viên tiếp nhận trong CSDL.");
 			}

@@ -53,5 +53,17 @@ public class PhieuNhapKho {
 	public void setChiTietNhapKho(ArrayList<LoPhuTung> chiTietNhapKho) {
 		this.chiTietNhapKho = chiTietNhapKho;
 	}
-		
+	
+	public double tinhTongTienNhapKho() {
+		if (chiTietNhapKho == null || chiTietNhapKho.isEmpty()) {
+			return 0;
+		}
+		double tong = 0;
+		for (LoPhuTung lo : chiTietNhapKho) {
+			if (lo != null) {
+				tong += lo.tinhThanhTien();
+			}
+		}
+		return tong;
+	}
 }

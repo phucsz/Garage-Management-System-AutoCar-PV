@@ -30,7 +30,8 @@ public class NhanVienDAO {
 			String maNV = rs.getString(1);
 			String hoTenNV = rs.getString(2);
 			String noiSinh = rs.getString(3);
-			LocalDate ngaySinh = rs.getDate(4).toLocalDate();
+			java.sql.Date ngaySinhSql = rs.getDate(4);
+			LocalDate ngaySinh = ngaySinhSql == null ? null : ngaySinhSql.toLocalDate();
 			String gioiTinh = rs.getString(5);
 			String cccd = rs.getString(6);
 			String sdt = rs.getString(7);
@@ -57,7 +58,8 @@ public class NhanVienDAO {
 		if (rs.next()) {
 			String hoTenNV = rs.getString(2); 
 			String noiSinh = rs.getString(3); 
-			LocalDate ngaySinh = rs.getDate(4).toLocalDate();
+			java.sql.Date ngaySinhSql = rs.getDate(4);
+			LocalDate ngaySinh = ngaySinhSql == null ? null : ngaySinhSql.toLocalDate();
 			String gioiTinh = rs.getString(5);
 			String cccd = rs.getString(6);
 			String sdt = rs.getString(7);
@@ -93,7 +95,8 @@ public class NhanVienDAO {
 		stmt.setString(1, nv.getMaNV());
 		stmt.setString(2, nv.getHoTenNV());
 		stmt.setString(3, nv.getNoiSinh());
-		stmt.setDate(4, Date.valueOf(nv.getNgaySinh()));
+		if (nv.getNgaySinh() == null) stmt.setNull(4, java.sql.Types.DATE);
+		else stmt.setDate(4, Date.valueOf(nv.getNgaySinh()));
 		stmt.setString(5, nv.getGioiTinh());
 		stmt.setString(6, nv.getCccd());
 		stmt.setString(7, nv.getSdt());
@@ -134,7 +137,8 @@ public class NhanVienDAO {
 		PreparedStatement stmt = con.prepareStatement(sql);
 		stmt.setString(1, nv.getHoTenNV());
 		stmt.setString(2, nv.getNoiSinh());
-		stmt.setDate(3, Date.valueOf(nv.getNgaySinh()));
+		if (nv.getNgaySinh() == null) stmt.setNull(3, java.sql.Types.DATE);
+		else stmt.setDate(3, Date.valueOf(nv.getNgaySinh()));
 		stmt.setString(4, nv.getGioiTinh());
 		stmt.setString(5, nv.getCccd());
 		stmt.setString(6, nv.getSdt());

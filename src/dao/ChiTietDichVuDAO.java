@@ -12,8 +12,9 @@ import java.util.List;
 /**
  * Lấy danh sách dịch vụ (tiền công) của một phiếu sửa chữa.
  *
- * Bảng dùng: ChiTietDichVu(maPSC, maDichVu, soLuong, donGia, ghiChu)
- *            DichVu(maDichVu, tenDichVu, loaiDichVu, donGiaHienTai)
+ * Bảng dùng: ChiTietDichVu(maPSC, maDichVu, soLuong, donGia, thueSuatVAT, ghiChu,
+ *                          thoiGianCapNhat, trangThai)
+ *            DichVu(maDichVu, tenDichVu, loaiDichVu, donGiaHienTai, thueSuatVAT)
  * donGia lấy từ ChiTietDichVu (đơn giá tại thời điểm sửa chữa), không lấy donGiaHienTai.
  */
 public class ChiTietDichVuDAO {
@@ -25,13 +26,18 @@ public class ChiTietDichVuDAO {
         public final int soLuong;
         public final double donGia;
         public final String ghiChu;
+        public final double thueSuatVAT;
+        public final String trangThai;
 
-        public DongDichVu(String maDichVu, String tenDichVu, int soLuong, double donGia, String ghiChu) {
+        public DongDichVu(String maDichVu, String tenDichVu, int soLuong, double donGia, String ghiChu,
+                          double thueSuatVAT, String trangThai) {
             this.maDichVu = maDichVu;
             this.tenDichVu = tenDichVu;
             this.soLuong = soLuong;
             this.donGia = donGia;
             this.ghiChu = ghiChu;
+            this.thueSuatVAT = thueSuatVAT;
+            this.trangThai = trangThai;
         }
 
         public double thanhTien() {
@@ -40,7 +46,7 @@ public class ChiTietDichVuDAO {
     }
 
     private static final String SQL =
-            "SELECT ct.maDichVu, dv.tenDichVu, ct.soLuong, ct.donGia, ct.ghiChu " +
+            "SELECT ct.maDichVu, dv.tenDichVu, ct.soLuong, ct.donGia, ct.thueSuatVAT, ct.ghiChu, ct.trangThai " +
             "FROM ChiTietDichVu ct " +
             "JOIN DichVu dv ON ct.maDichVu = dv.maDichVu " +
             "WHERE ct.maPSC = ? " +
@@ -59,7 +65,9 @@ public class ChiTietDichVuDAO {
                             rs.getString("tenDichVu"),
                             rs.getInt("soLuong"),
                             rs.getDouble("donGia"),
-                            rs.getString("ghiChu")));
+                            rs.getString("ghiChu"),
+                            rs.getDouble("thueSuatVAT"),
+                            rs.getString("trangThai")));
                 }
             }
         } catch (SQLException e) {

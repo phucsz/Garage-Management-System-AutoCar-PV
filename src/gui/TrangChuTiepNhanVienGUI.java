@@ -46,7 +46,7 @@ public class TrangChuTiepNhanVienGUI extends TrangChuBaseGUI {
 		super(nv.getHoTenNV(), "Tiếp nhận viên", MENU);
 
 		// Lập phiếu -> bấm "Tra cứu phiếu tiếp nhận" -> sang màn hình tra cứu (vẫn tô sáng nút "Tiếp Nhận Xe")
-		lapPhieuGUI = new LapPhieuTiepNhanGUI(nv.getHoTenNV(), () -> hienThi(KEY_TRA_CUU_TIEP_NHAN, KEY_TIEP_NHAN));
+		lapPhieuGUI = new LapPhieuTiepNhanGUI(nv, () -> hienThi(KEY_TRA_CUU_TIEP_NHAN, KEY_TIEP_NHAN));
 		traCuuGUI = new TraCuuPhieuTiepNhanGUI(() -> hienThi(KEY_TIEP_NHAN));
 		khachHangVaXeGUI = new KhachHangVaXeGUI(() -> hienThi(KEY_TRANG_CHU));
 

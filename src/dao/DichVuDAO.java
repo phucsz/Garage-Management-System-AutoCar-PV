@@ -69,7 +69,8 @@ public class DichVuDAO {
 	}
 
 	public boolean insert(DichVu value) throws SQLException {
-		String sql = "INSERT INTO DichVu VALUES (?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO DichVu (maDichVu, tenDichVu, loaiDichVu, donGiaHienTai, thueSuatVAT) "
+				+ "VALUES (?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = connection().prepareStatement(sql)) {
 			set(stmt, value);
 			return stmt.executeUpdate() == 1;
@@ -77,12 +78,13 @@ public class DichVuDAO {
 	}
 
 	public boolean update(DichVu value) throws SQLException {
-		String sql = "UPDATE DichVu SET tenDichVu=?, loaiDichVu=?, donGiaHienTai=? thueSuatVAT=? WHERE maDichVu=?";
+		String sql = "UPDATE DichVu SET tenDichVu=?, loaiDichVu=?, donGiaHienTai=?, thueSuatVAT=? WHERE maDichVu=?";
 		try (PreparedStatement stmt = connection().prepareStatement(sql)) {
 			stmt.setString(1, value.getTenDichVu());
 			stmt.setString(2, value.getLoaiDichVu());
 			stmt.setDouble(3, value.getDonGiaHienTai());
 			stmt.setDouble(4, value.getThueSuatVAT());
+			stmt.setString(5, value.getMaDichVu());
 			return stmt.executeUpdate() == 1;
 		}
 	}

@@ -18,8 +18,6 @@ public class PhuTung {
 		this.maPhuTung = maPhuTung;
 	}
 
-	
-
 	public PhuTung(String maPhuTung, String tenPhuTung, String donViTinh, double donGiaHienTai, double thueSuatVAT,
 			DanhMucPhuTung danhMucPhuTung, ArrayList<LoPhuTung> loPhuTung) {
 		this.maPhuTung = maPhuTung;
@@ -58,4 +56,16 @@ public class PhuTung {
 		this.loPhuTung = loPhuTung;
 	}
 	
+	public int tinhSoLuongTon() {
+		if (loPhuTung == null || loPhuTung.isEmpty()) {
+			return 0;
+		}
+		int slt = 0;
+		for (LoPhuTung lo : loPhuTung) {
+			if (lo != null) {
+				slt += lo.getSoLuongTon();
+			}
+		}
+		return slt;
+	}
 }

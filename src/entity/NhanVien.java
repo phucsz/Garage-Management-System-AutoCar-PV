@@ -115,9 +115,18 @@ public class NhanVien {
 	}
 	
 	public int getTuoi() {
-		int namHienTai = LocalDate.now().getYear();
-		int namSinh = this.getNgaySinh().getYear();
-		return namHienTai - namSinh;
+		if (ngaySinh == null) {
+			return 0;
+		}
+		LocalDate homNay = LocalDate.now();
+		if (ngaySinh.isAfter(homNay)) {
+			return 0;
+		}
+		int tuoi = homNay.getYear() - ngaySinh.getYear();
+		if (homNay.isBefore(ngaySinh.plusYears(tuoi))) {
+			tuoi--;
+		}
+		return tuoi;
 	}
 	
 	@Override

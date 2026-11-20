@@ -36,4 +36,8 @@ public class KhachHangVaXeBUS {
 	public boolean capNhatXe(Xe xe) throws SQLException {
 		return xeDAO.capNhatXe(xe);
 	}
+
+	public Integer laySoKmGanNhat(String bienSo) throws SQLException {
+		return xeDAO.laySoKmGanNhat(bienSo);
+	}
 }

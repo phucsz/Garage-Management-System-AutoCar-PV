@@ -10,13 +10,70 @@ import java.util.List;
 
 public class HoaDonDAO {
 
+    private void napChiTietPhieuSuaChua(PhieuSuaChua phieu) {
+        if (phieu == null || phieu.getMaPSC() == null) {
+            return;
+        }
+        Connection con = ConnectDB.getConnection();
+        ArrayList<ChiTietDichVu> dichVu = new ArrayList<>();
+        ArrayList<ChiTietPhuTung> phuTung = new ArrayList<>();
+
+        String sqlDichVu = "SELECT ctdv.maDichVu, ctdv.soLuong, ctdv.donGia, ctdv.thueSuatVAT, "
+                + "ctdv.ghiChu, ctdv.thoiGianCapNhat, ctdv.trangThai, dv.tenDichVu, dv.loaiDichVu, "
+                + "dv.donGiaHienTai, dv.thueSuatVAT AS vatDichVu "
+                + "FROM ChiTietDichVu ctdv "
+                + "JOIN DichVu dv ON dv.maDichVu = ctdv.maDichVu "
+                + "WHERE ctdv.maPSC = ?";
+        try (PreparedStatement stmt = con.prepareStatement(sqlDichVu)) {
+            stmt.setString(1, phieu.getMaPSC());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    DichVu dv = new DichVu(rs.getString("maDichVu"), rs.getString("tenDichVu"),
+                            rs.getString("loaiDichVu"), rs.getDouble("donGiaHienTai"),
+                            rs.getDouble("vatDichVu"));
+                    Timestamp capNhat = rs.getTimestamp("thoiGianCapNhat");
+                    dichVu.add(new ChiTietDichVu(phieu, dv, rs.getInt("soLuong"), rs.getDouble("donGia"),
+                            rs.getDouble("thueSuatVAT"), rs.getString("ghiChu"),
+                            capNhat == null ? null : capNhat.toLocalDateTime(), rs.getString("trangThai")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String sqlPhuTung = "SELECT ctpt.maPhuTung, ctpt.soLuongDuKien, ctpt.donGia, ctpt.thueSuatVAT, "
+                + "ctpt.soLuongDaDung, ctpt.soLuongCapPhat, pt.tenPhuTung, pt.donViTinh, "
+                + "pt.donGiaHienTai, pt.thueSuatVAT AS vatPhuTung "
+                + "FROM ChiTietPhuTung ctpt "
+                + "JOIN PhuTung pt ON pt.maPhuTung = ctpt.maPhuTung "
+                + "WHERE ctpt.maPSC = ?";
+        try (PreparedStatement stmt = con.prepareStatement(sqlPhuTung)) {
+            stmt.setString(1, phieu.getMaPSC());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    PhuTung pt = new PhuTung(rs.getString("maPhuTung"), rs.getString("tenPhuTung"),
+                            rs.getString("donViTinh"), rs.getDouble("donGiaHienTai"),
+                            rs.getDouble("vatPhuTung"), null, null);
+                    phuTung.add(new ChiTietPhuTung(phieu, pt, rs.getInt("soLuongDaDung"),
+                            rs.getDouble("donGia"), rs.getDouble("thueSuatVAT"),
+                            rs.getInt("soLuongDaDung"), rs.getInt("soLuongCapPhat")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        phieu.setChiTietDichVu(dichVu);
+        phieu.setChiTietPhuTung(phuTung);
+    }
+
     public List<HoaDon> getAllHoaDon() {
         List<HoaDon> dsHoaDon = new ArrayList<>();
         Connection con = ConnectDB.getConnection();
         String sql = "SELECT h.*, " +
                  "k.hoTenKH, k.noiSinh AS noiSinhKH, k.ngaySinh AS ngaySinhKH, k.cccd AS cccdKH, k.sdt AS sdtKH, k.diaChi AS diaChiKH, k.email AS emailKH, " +
                  "COALESCE((SELECT SUM(ctdv.soLuong * ctdv.donGia) FROM ChiTietDichVu ctdv WHERE ctdv.maPSC = h.maPSC), 0) AS tongTienDichVu, " +
-                 "COALESCE((SELECT SUM(ctpt.soLuong * ctpt.donGia) FROM ChiTietPhuTung ctpt WHERE ctpt.maPSC = h.maPSC), 0) AS tongTienPhuTung, " +
+                 "COALESCE((SELECT SUM(ctpt.soLuongDaDung * ctpt.donGia) FROM ChiTietPhuTung ctpt WHERE ctpt.maPSC = h.maPSC), 0) AS tongTienPhuTung, " +
                  "km.tenChuongTrinh, km.ngayBatDau, km.ngayKetThuc, km.loaiKhuyenMai, km.giaTriKhuyenMai " +
                      "FROM HoaDon h " +
                      "LEFT JOIN KhachHang k ON h.maKH = k.maKH " +
@@ -48,8 +105,7 @@ public class HoaDonDAO {
                 );
 
                 PhieuSuaChua psc = new PhieuSuaChua(maPSC);
-                psc.setTongTienDichVu(rs.getDouble("tongTienDichVu"));
-                psc.setTongTienPhuTung(rs.getDouble("tongTienPhuTung"));
+                napChiTietPhieuSuaChua(psc);
                 NhanVien nv = new NhanVien(maNVThuNgan);
                 ChuongTrinhKhuyenMai km = maChuongTrinh != null ? new ChuongTrinhKhuyenMai(
                     maChuongTrinh, rs.getString("tenChuongTrinh"),
@@ -67,7 +123,7 @@ public class HoaDonDAO {
     }
 
     public String getBienSoXeByPSC(String maPSC) {
-        String bienSo = "51G-123.45"; // Giá trị mặc định nếu không tìm thấy
+        String bienSo = "";
         Connection con = ConnectDB.getConnection();
         String sql = "SELECT ptn.bienSoXe FROM PhieuSuaChua psc JOIN PhieuTiepNhan ptn ON psc.maPTN = ptn.maPTN WHERE psc.maPSC = ?";
         
@@ -92,7 +148,7 @@ public class HoaDonDAO {
         String sql = "SELECT h.*, " +
                  "k.hoTenKH, k.noiSinh AS noiSinhKH, k.ngaySinh AS ngaySinhKH, k.cccd AS cccdKH, k.sdt AS sdtKH, k.diaChi AS diaChiKH, k.email AS emailKH, " +
                  "COALESCE((SELECT SUM(ctdv.soLuong * ctdv.donGia) FROM ChiTietDichVu ctdv WHERE ctdv.maPSC = h.maPSC), 0) AS tongTienDichVu, " +
-                 "COALESCE((SELECT SUM(ctpt.soLuong * ctpt.donGia) FROM ChiTietPhuTung ctpt WHERE ctpt.maPSC = h.maPSC), 0) AS tongTienPhuTung, " +
+                 "COALESCE((SELECT SUM(ctpt.soLuongDaDung * ctpt.donGia) FROM ChiTietPhuTung ctpt WHERE ctpt.maPSC = h.maPSC), 0) AS tongTienPhuTung, " +
                  "km.tenChuongTrinh, km.ngayBatDau, km.ngayKetThuc, km.loaiKhuyenMai, km.giaTriKhuyenMai " +
                      "FROM HoaDon h " +
                      "LEFT JOIN KhachHang k ON h.maKH = k.maKH " +
@@ -125,8 +181,7 @@ public class HoaDonDAO {
                 );
 
                 PhieuSuaChua psc = new PhieuSuaChua(maPSC);
-                psc.setTongTienDichVu(rs.getDouble("tongTienDichVu"));
-                psc.setTongTienPhuTung(rs.getDouble("tongTienPhuTung"));
+                napChiTietPhieuSuaChua(psc);
                 NhanVien nv = new NhanVien(maNVThuNgan);
                 ChuongTrinhKhuyenMai km = maChuongTrinh != null ? new ChuongTrinhKhuyenMai(
                     maChuongTrinh, rs.getString("tenChuongTrinh"),

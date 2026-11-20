@@ -23,7 +23,7 @@ public class XeDAO {
 	
 	public ArrayList<Xe> getXeTheoKhachHang(String maKH) throws SQLException {
 		ArrayList<Xe> ds = new ArrayList<>();
-		String sql = "SELECT x.*,ptn.maKH FROM Xe x join PhieuTiepNhan ptn on x.bienSoXe = ptn.bienSoXe where maKH = ?";
+		String sql = "SELECT DISTINCT x.* FROM Xe x JOIN PhieuTiepNhan ptn ON x.bienSoXe = ptn.bienSoXe WHERE ptn.maKH = ?";
 		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
 			stmt.setString(1, maKH);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -37,7 +37,7 @@ public class XeDAO {
 	}
 
 	public boolean capNhatXe(Xe xe) throws SQLException {
-		String sql = "UPDATE Xe SET loaiXe=?, hangXe=?, mauXe=?, soThangDaDi=?"
+		String sql = "UPDATE Xe SET loaiXe=?, hangXe=?, mauXe=?, soThangDaDi=? "
 				+ "WHERE bienSoXe=?";
 		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
 			stmt.setString(1, xe.getLoaiXe());
@@ -50,7 +50,8 @@ public class XeDAO {
 	}
 
 	public boolean themXe(Xe xe) throws SQLException {
-		String sql = "INSERT INTO Xe VALUES (?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO Xe (bienSoXe, loaiXe, congSuat, hangXe, mauXe, soThangDaDi) "
+				+ "VALUES (?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
 			stmt.setString(1, xe.getBienSoXe());
 			stmt.setString(2, xe.getLoaiXe());
@@ -82,6 +83,21 @@ public class XeDAO {
 			xe = new Xe(bienSo, loaiXe, congSuat, hangXe, mauXe, soThangDaDi);
 		}
 		return xe;
+	}
+
+	public Integer laySoKmGanNhat(String bienSo) throws SQLException {
+		String sql = "SELECT TOP 1 soKmDaDi FROM PhieuTiepNhan "
+				+ "WHERE bienSoXe = ? ORDER BY ngayTiepNhan DESC";
+		try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
+			stmt.setString(1, bienSo);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					double km = rs.getDouble("soKmDaDi");
+					return rs.wasNull() ? null : (int) km;
+				}
+			}
+		}
+		return null;
 	}
 
 	private static int nullableInt(ResultSet rs, String column) throws SQLException {

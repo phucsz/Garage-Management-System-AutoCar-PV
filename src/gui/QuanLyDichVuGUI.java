@@ -161,7 +161,7 @@ public class QuanLyDichVuGUI extends JPanel {
 		try {
 			for (DichVu dv : dichVuBUS.timKiem(maDichVu, loaiDichVu)) {
 				ds.add(new DichVu(dv.getMaDichVu(), dv.getTenDichVu(), dv.getLoaiDichVu(),
-						dv.getDonGiaHienTai()));
+						dv.getDonGiaHienTai(), dv.getThueSuatVAT()));
 			}
 		} catch (SQLException e) {
 			hienLoiCSDL("tải danh sách dịch vụ", e);
@@ -188,7 +188,8 @@ public class QuanLyDichVuGUI extends JPanel {
 	 */
 	private boolean luuDichVu(DichVu dv, boolean themMoi) throws SQLException {
 		String ma = themMoi ? dichVuBUS.phatSinhMaDV() : dv.getMaDichVu();
-		DichVu entity = new DichVu(ma, dv.getTenDichVu(), dv.getLoaiDichVu(), dv.getDonGiaHienTai());
+		DichVu entity = new DichVu(ma, dv.getTenDichVu(), dv.getLoaiDichVu(),
+				dv.getDonGiaHienTai(), dv.getThueSuatVAT());
 		return themMoi ? dichVuBUS.them(entity) : dichVuBUS.capNhat(entity);
 	}
 
@@ -491,7 +492,7 @@ public class QuanLyDichVuGUI extends JPanel {
 		if (kq == null) {
 			return;
 		}
-		DichVu dv = new DichVu(maDV, kq[1], kq[2].isEmpty() ? null : kq[2], docTien(kq[3]));
+		DichVu dv = new DichVu(maDV, kq[1], kq[2].isEmpty() ? null : kq[2], docTien(kq[3]), 0);
 		try {
 			if (luuDichVu(dv, true)) {
 				JOptionPane.showMessageDialog(this, "Đã thêm dịch vụ " + dv.getTenDichVu() + ".", "Thông báo",
@@ -515,7 +516,8 @@ public class QuanLyDichVuGUI extends JPanel {
 		if (kq == null) {
 			return;
 		}
-		DichVu moi = new DichVu(dv.getMaDichVu(), kq[1], kq[2].isEmpty() ? null : kq[2], docTien(kq[3]));
+		DichVu moi = new DichVu(dv.getMaDichVu(), kq[1], kq[2].isEmpty() ? null : kq[2],
+				docTien(kq[3]), dv.getThueSuatVAT());
 		try {
 			if (luuDichVu(moi, false)) {
 				JOptionPane.showMessageDialog(this, "Đã cập nhật dịch vụ " + dv.getMaDichVu() + ".", "Thông báo",

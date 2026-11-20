@@ -12,8 +12,9 @@ import java.util.List;
 /**
  * Lấy danh sách phụ tùng / vật tư đã dùng của một phiếu sửa chữa.
  *
- * Bảng dùng: ChiTietPhuTung(maPSC, maPhuTung, soLuong, donGia, ghiChu)
- *            PhuTung(maPhuTung, tenPhuTung, maDanhMuc, donViTinh, donGiaHienTai, ...)
+ * Bảng dùng: ChiTietPhuTung(maPSC, maPhuTung, soLuongDuKien, donGia, thueSuatVAT,
+ *                          soLuongDaDung, soLuongCapPhat)
+ *            PhuTung(maPhuTung, tenPhuTung, maDanhMuc, donViTinh, donGiaHienTai, thueSuatVAT)
  * donGia lấy từ ChiTietPhuTung (đơn giá tại thời điểm sửa chữa), không lấy donGiaHienTai.
  */
 public class ChiTietPhuTungDAO {
@@ -26,15 +27,22 @@ public class ChiTietPhuTungDAO {
         public final int soLuong;
         public final double donGia;
         public final String ghiChu;
+        public final int soLuongDuKien;
+        public final int soLuongDaDung;
+        public final int soLuongCapPhat;
 
         public DongPhuTung(String maPhuTung, String tenPhuTung, String donViTinh,
-                           int soLuong, double donGia, String ghiChu) {
+                           int soLuong, double donGia, String ghiChu,
+                           int soLuongDuKien, int soLuongDaDung, int soLuongCapPhat) {
             this.maPhuTung = maPhuTung;
             this.tenPhuTung = tenPhuTung;
             this.donViTinh = donViTinh;
             this.soLuong = soLuong;
             this.donGia = donGia;
             this.ghiChu = ghiChu;
+            this.soLuongDuKien = soLuongDuKien;
+            this.soLuongDaDung = soLuongDaDung;
+            this.soLuongCapPhat = soLuongCapPhat;
         }
 
         public double thanhTien() {
@@ -43,7 +51,8 @@ public class ChiTietPhuTungDAO {
     }
 
     private static final String SQL =
-            "SELECT ct.maPhuTung, pt.tenPhuTung, pt.donViTinh, ct.soLuong, ct.donGia, ct.ghiChu " +
+            "SELECT ct.maPhuTung, pt.tenPhuTung, pt.donViTinh, ct.soLuongDuKien, ct.soLuongDaDung, "
+            + "ct.soLuongCapPhat, ct.donGia, ct.thueSuatVAT " +
             "FROM ChiTietPhuTung ct " +
             "JOIN PhuTung pt ON ct.maPhuTung = pt.maPhuTung " +
             "WHERE ct.maPSC = ? " +
@@ -61,9 +70,12 @@ public class ChiTietPhuTungDAO {
                             rs.getString("maPhuTung"),
                             rs.getString("tenPhuTung"),
                             rs.getString("donViTinh"),
-                            rs.getInt("soLuong"),
+                            rs.getInt("soLuongDaDung"),
                             rs.getDouble("donGia"),
-                            rs.getString("ghiChu")));
+                            null,
+                            rs.getInt("soLuongDuKien"),
+                            rs.getInt("soLuongDaDung"),
+                            rs.getInt("soLuongCapPhat")));
                 }
             }
         } catch (SQLException e) {

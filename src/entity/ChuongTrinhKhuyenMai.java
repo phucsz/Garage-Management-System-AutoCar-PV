@@ -43,7 +43,7 @@ public class ChuongTrinhKhuyenMai {
 	    if (giaTriKhuyenMai < 0) {
 	        throw new IllegalArgumentException("Lỗi: Giá trị khuyến mãi không được nhỏ hơn 0");
 	    }
-	    if (this.getLoaiKhuyenMai().equals("Phần trăm")) {
+	    if ("Phần trăm".equalsIgnoreCase(this.getLoaiKhuyenMai())) {
 	        if (giaTriKhuyenMai > 100) {
 	            throw new IllegalArgumentException("Lỗi: Khuyến mãi theo phần trăm không được vượt quá 100%");
 	        }
@@ -53,9 +53,12 @@ public class ChuongTrinhKhuyenMai {
 
 
 	public String KiemTraTrangThai() {
+		if (ngayBatDau == null || ngayKetThuc == null) {
+			return "Chưa xác định";
+		}
 		LocalDate ngayHienTai = LocalDate.now();
-		if (ngayHienTai.isAfter(ngayBatDau) && ngayHienTai.isBefore(ngayKetThuc)) return "Đang diễn ra";
-		else if (ngayHienTai.isBefore(ngayBatDau)) return "Chưa bắt đầu";
+		if (!ngayHienTai.isBefore(ngayBatDau) && !ngayHienTai.isAfter(ngayKetThuc)) return "Đang diễn ra";
+		if (ngayHienTai.isBefore(ngayBatDau)) return "Chưa bắt đầu";
 		return "Đã kết thúc";
 	}
 	@Override
